@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:colorBackground"
+        app:liftOnScrollColor="?android:colorBackground">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:theme="@style/Theme.Toolbar.Surface"
+            app:layout_scrollFlags="scroll|enterAlways|snap"
+            app:subtitleTextAppearance="@style/TextAppearance.Material3.BodySmall"
+            app:titleTextAppearance="@style/TextAppearance.Toolbar.Title" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:padding="4dp"
+            android:text="@string/developer"
+            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+            android:textColor="?colorPrimary"
+            android:textSize="18sp" />
+
+        <dev.umerov.project.view.natives.rlottie.RLottieImageView
+            android:id="@+id/lottie_animation"
+            android:layout_width="108dp"
+            android:layout_height="108dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="4dp"
+            android:contentDescription="@string/app_name"
+            app:loopAnimation="true" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="vertical"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="@string/info_balance"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textSize="22sp" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/balance"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="?colorPrimary"
+                android:textSize="22sp"
+                tools:text="0 RUB" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="@string/info_taked"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textSize="22sp" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/taked"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="?colorPrimary"
+                android:textSize="22sp"
+                tools:text="0 RUB" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="@string/info_pasted"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textSize="22sp" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/pasted"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="?colorPrimary"
+                android:textSize="22sp"
+                tools:text="0 RUB" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:text="@string/info_operations_count"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textSize="22sp" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/operations_count"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="?colorSecondary"
+                android:textSize="22sp"
+                tools:text="0" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

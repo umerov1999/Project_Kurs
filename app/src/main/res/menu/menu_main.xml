@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/balance"
+        android:icon="@drawable/dollar_circle_outline"
+        android:title="@string/balance" />
+
+    <item
+        android:id="@+id/paste"
+        android:icon="@drawable/money_request_outline"
+        android:title="@string/paste_money" />
+
+    <item
+        android:id="@+id/take"
+        android:icon="@drawable/money_transfer_outline"
+        android:title="@string/take_money" />
+
+    <item
+        android:id="@+id/menu_settings"
+        android:icon="@drawable/preferences"
+        android:title="@string/settings" />
+</menu>

@@ -1,0 +1,38 @@
+package dev.umerov.project.activity.slidr
+
+import android.view.View
+import androidx.fragment.app.FragmentActivity
+import dev.umerov.project.activity.slidr.model.SlidrConfig
+import dev.umerov.project.activity.slidr.widget.SliderPanel.OnPanelSlideListener
+import dev.umerov.project.util.Utils
+
+internal class FragmentPanelSlideListener(private val view: View, private val config: SlidrConfig) :
+    OnPanelSlideListener {
+    override fun onStateChanged(state: Int) {
+        config.listener?.onSlideStateChanged(state)
+    }
+
+    override fun onClosed() {
+        if (config.listener?.onSlideClosed() == true) {
+            return
+        }
+
+        // Ensure that we are attached to a FragmentActivity
+        if (view.context is FragmentActivity) {
+            val activity = view.context as FragmentActivity
+            if (activity.supportFragmentManager.backStackEntryCount == 0) {
+                Utils.finishActivityImmediate(activity)
+            } else {
+                activity.supportFragmentManager.popBackStack()
+            }
+        }
+    }
+
+    override fun onOpened() {
+        config.listener?.onSlideOpened()
+    }
+
+    override fun onSlideChange(percent: Float) {
+        config.listener?.onSlideChange(percent)
+    }
+}

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Бюджет</string>
+
+    <string name="crash_error_activity_error_occurred_explanation">Необрабатываемое исключение.</string>
+    <string name="crash_error_activity_restart_app">Перезапуск</string>
+    <string name="crash_error_activity_error_details">Детали</string>
+    <string name="crash_error_activity_error_details_title">Детали исключения</string>
+    <string name="crash_error_activity_error_details_close">Закрыть</string>
+    <string name="crash_error_activity_error_details_copy">Копировать</string>
+    <string name="crash_error_activity_error_details_copied">Скопировано</string>
+    <string name="crash_error_activity_error_details_clipboard_label">Информация об ошибке</string>
+    <string name="crash_error_activity_out_of_memory">Недостаточно оперативной памяти!</string>
+
+    <string-array name="array_language_names">
+        <item>По умолчанию</item>
+        <item>Английский</item>
+        <item>Русский</item>
+    </string-array>
+
+    <string-array name="night_mode_names">
+        <item>Выкл</item>
+        <item>Вкл</item>
+        <item>Автоматически</item>
+        <item>Как в системе</item>
+    </string-array>
+
+    <string-array name="theme_overlay_names">
+        <item>Выкл</item>
+        <item>Amoled</item>
+        <item>Material 1</item>
+    </string-array>
+
+    <string name="button_back">Назад</string>
+    <string name="search_hint">Найти</string>
+    <string name="close">Закрыть</string>
+    <string name="search_options">Опции поиска</string>
+    <string name="directory_is_empty">Директория пуста</string>
+    <string name="error_timeout_message">Превышено время ожидание запроса</string>
+    <string name="error_unknown_host">Нет подключения к сети</string>
+    <string name="more_info">Подробнее</string>
+    <string name="button_ok">OK</string>
+    <string name="button_yes">Да</string>
+    <string name="button_cancel">Отмена</string>
+    <string name="button_copy">Копировать</string>
+    <string name="not_permitted">Разрешения не предоставлены! Функция не доступна</string>
+    <string name="click_back_to_exit">Нажмите еще раз для выхода</string>
+    <string name="success">Успех</string>
+    <string name="choose_theme_title">Цветовая палитра</string>
+    <string name="night_mode_title">Ночной режим</string>
+    <string name="day_mode_title">Дневной режим</string>
+    <string name="font_size">Размер шрифта</string>
+    <string name="dev_settings">Для разработчиков</string>
+    <string name="developer_mode">Режим разработчика</string>
+    <string name="need_restart">Требуется перезапуск</string>
+    <string name="settings">Настройки</string>
+    <string name="set_default">Сбросить</string>
+    <string name="slidr_vertical_settings">Вертикальные настройки:</string>
+    <string name="slidr_horizontal_settings">Горизонтальные настройки:</string>
+    <string name="slidr_sensitive">Чувствительность %1$d</string>
+    <string name="slidr_velocity_threshold">Порог скорости %1$d</string>
+    <string name="slidr_distance_threshold">Порог дистанции %1$d</string>
+    <string name="not_available">НЕДОСТУПНО</string>
+    <string name="theme_edit_title">Выбор цветового оформления</string>
+    <string name="cancel">Отмена</string>
+    <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
+    <string name="formatted_date_tomorrow_clean">завтра в %1$s</string>
+    <string name="formatted_date_yesterday_clean">вчера в %1$s</string>
+    <string name="files_count_a">%1$d файл</string>
+    <string name="files_count_b">%1$d файла</string>
+    <string name="files_count_c">%1$d файлов</string>
+    <string name="tags">Тэги</string>
+    <string name="export_settings">Экспорт настроек</string>
+    <string name="import_settings">Импорт настроек</string>
+    <string name="import_export_settings">Импорт/Экспорт</string>
+    <string name="viewpager_page_transform">Анимация Viewpager2</string>
+    <string name="developer">Разработчик: Умеров Артём 21ИС-3з</string>
+    <string name="select_file">Выбор %1$s</string>
+    <string name="select_folder">Выбор директории</string>
+    <string name="biometric">Приложите палец к сканеру отпечатков</string>
+    <string name="biometric_not_support">Вход по отпечатку пальца не поддерживается!</string>
+    <string name="create_pin_code_title">Создайте PIN-код</string>
+    <string name="entered_pin_codes_do_not_match">Введенные PIN-коды не совпадают</string>
+    <string name="pin_digit">Пин код</string>
+    <string name="use_pin_title">Используйте PIN-код или отпечаток пальца</string>
+    <string name="repeat_pin_code_title">Повторите PIN-код</string>
+    <string name="not_yet_implemented_message">Ещё не реализовано!</string>
+    <string name="error_login_by_fingerprint_not_allowed">Вход с помощью отпечатка пальца не разрешен</string>
+    <string name="limit_exceeded_number_of_attempts_message">Превышен лимит попыток ввода</string>
+    <string name="pin_is_invalid_message">Неверный PIN-код</string>
+    <string name="security">Безопасность</string>
+    <string name="allow_fingerprint_title">Разрешить отпечаток пальца</string>
+    <string name="change_pin_title">Изменить PIN-код</string>
+    <string name="ask_for_pin_on_application_start_title">PIN-код при старте</string>
+    <string name="ask_for_pin_on_application_start_summary">Запрашивать PIN-код при старте приложения</string>
+    <string name="general_settings">Общие</string>
+    <string name="reset_settings">Сброс настроек</string>
+    <string name="wrong_settings_format">Данный формат настроек не поддерживается!</string>
+    <string name="language_ui">Язык</string>
+    <string name="scan_qr">Сканировать QR</string>
+
+    <string name="paste_money">Пополнить</string>
+    <string name="take_money">Снять</string>
+    <string name="balance">Баланс</string>
+
+    <string name="error_db_get_register">Не удалось получить Регистр!</string>
+    <string name="error_db_get_coin_operation_id">Денежная операция не найдена!</string>
+    <string name="error_db_add_operation_support_only_new">Поддерживаются только новые операции!</string>
+    <string name="error_db_low_balance">Недостаточно денег!</string>
+
+    <string name="info_balance">Баланс:</string>
+    <string name="info_taked">Списано:</string>
+    <string name="info_pasted">Получено:</string>
+    <string name="info_operations_count">Операций:</string>
+
+    <string name="operation_day_today">Сегодня</string>
+    <string name="operation_day_yesterday">Вчера</string>
+    <string name="operation_day_ten_days">За 10 дней</string>
+    <string name="operation_day_older">Старые</string>
+
+    <string name="edit">Изменить</string>
+    <string name="delete">Удалить</string>
+
+    <string name="tittle">Заголовок</string>
+    <string name="comment">Комментарий</string>
+    <string name="coin">Деньги</string>
+    <string name="date">Дата</string>
+
+    <string name="coin_must_over_zero">Деньги должны быть больше 0!</string>
+
+    <string name="slidr_settings">Настройки Slidr</string>
+</resources>

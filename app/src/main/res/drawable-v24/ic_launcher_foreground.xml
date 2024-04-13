@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M 50.067889,52.099433 H 30.259229 V 36.005342 c 0,-2.050716 1.663856,-3.714572 3.714572,-3.714572 h 16.094088 z m 0,4.950372 V 76.858466 H 33.973801 c -2.050716,0 -3.714572,-1.66385 -3.714572,-3.714568 V 57.049805 Z m 4.950375,0 v 19.808661 h 16.094089 c 2.050718,0 3.714571,-1.66385 3.714571,-3.714568 V 57.049805 Z m 9.90433,-24.759035 c 1.366548,0 2.475189,1.10864 2.475189,2.476978 v 4.952166 h 4.952165 c 1.368335,0 2.476976,1.10864 2.476976,2.475187 0,1.366547 -1.108641,2.475188 -2.476976,2.475188 h -4.952165 v 4.952165 c 0,1.368338 -1.108641,2.476979 -2.475189,2.476979 -1.366547,0 -2.475188,-1.108641 -2.475188,-2.476979 v -4.952165 h -4.952165 c -1.368336,0 -2.476977,-1.108641 -2.476977,-2.475188 0,-1.366547 1.108641,-2.475187 2.476977,-2.475187 h 4.952165 v -4.952166 c 0,-1.368338 1.108641,-2.476978 2.475188,-2.476978 z m 0,0"
+        tools:ignore="VectorPath">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="40"
+                android:centerY="85"
+                android:gradientRadius="70"
+                android:type="radial">
+                <item
+                    android:color="@color/icon_var1"
+                    android:offset="0.1" />
+                <item
+                    android:color="@color/icon_var2"
+                    android:offset="0.4" />
+                <item
+                    android:color="@color/icon_var3"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>
