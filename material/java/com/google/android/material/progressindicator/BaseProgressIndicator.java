@@ -19,6 +19,7 @@ package com.google.android.material.progressindicator;
 import com.google.android.material.R;
 
 import static com.google.android.material.theme.overlay.MaterialThemeOverlay.wrap;
+import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
 import android.content.Context;
@@ -40,7 +41,6 @@ import androidx.annotation.RestrictTo;
 import androidx.annotation.RestrictTo.Scope;
 import androidx.annotation.StyleRes;
 import androidx.annotation.VisibleForTesting;
-import androidx.core.view.ViewCompat;
 import androidx.vectordrawable.graphics.drawable.Animatable2Compat.AnimationCallback;
 import com.google.android.material.color.MaterialColors;
 import com.google.android.material.internal.ThemeEnforcement;
@@ -82,6 +82,7 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
 
   static final float DEFAULT_OPACITY = 0.2f;
   static final int MAX_ALPHA = 255;
+
   /**
    * The maximum time, in milliseconds, that the requested hide action is allowed to wait once
    * {@link #show()} is called.
@@ -93,6 +94,7 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
 
   /** A temp place to hold new progress while switching from indeterminate to determinate mode. */
   private int storedProgress;
+
   /**
    * A temp place to hold whether use animator to update the new progress after switching from
    * indeterminate to determinate mode.
@@ -161,13 +163,7 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
   // ******************** Initialization **********************
 
   private void registerAnimationCallbacks() {
-    if (getProgressDrawable() != null && getIndeterminateDrawable() != null) {
-      // Registers the animation callback to switch indeterminate mode at the end of indeterminate
-      // animation.
-      getIndeterminateDrawable()
-          .getAnimatorDelegate()
-          .registerAnimatorsCompleteCallback(switchIndeterminateModeCallback);
-    }
+    registerSwitchIndeterminateModeCallback();
 
     // Registers the hide animation callback to determinate drawable.
     if (getProgressDrawable() != null) {
@@ -176,6 +172,16 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
     // Registers the hide animation callback to indeterminate drawable.
     if (getIndeterminateDrawable() != null) {
       getIndeterminateDrawable().registerAnimationCallback(hideAnimationCallback);
+    }
+  }
+
+  void registerSwitchIndeterminateModeCallback() {
+    if (getProgressDrawable() != null && getIndeterminateDrawable() != null) {
+      // Registers the animation callback to switch indeterminate mode at the end of indeterminate
+      // animation.
+      getIndeterminateDrawable()
+          .getAnimatorDelegate()
+          .registerAnimatorsCompleteCallback(switchIndeterminateModeCallback);
     }
   }
 
@@ -236,7 +242,7 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
       delayedHide.run();
       return;
     }
-    postDelayed(delayedHide, /*delayMillis=*/ minHideDelay - timeElapsedSinceShowStart);
+    postDelayed(delayedHide, /* delayMillis= */ minHideDelay - timeElapsedSinceShowStart);
   }
 
   /**
@@ -248,7 +254,7 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
    */
   private void internalHide() {
     ((DrawableWithAnimatedVisibilityChange) getCurrentDrawable())
-        .setVisible(/*visible=*/ false, /*restart=*/ false, /*animate=*/ true);
+        .setVisible(/* visible= */ false, /* restart= */ false, /* animate= */ true);
 
     if (isNoLongerNeedToBeVisible()) {
       setVisibility(INVISIBLE);
@@ -258,13 +264,13 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
   @Override
   protected void onVisibilityChanged(@NonNull View changedView, int visibility) {
     super.onVisibilityChanged(changedView, visibility);
-    applyNewVisibility(/*animate=*/ visibility == VISIBLE);
+    applyNewVisibility(/* animate= */ visibility == VISIBLE);
   }
 
   @Override
   protected void onWindowVisibilityChanged(int visibility) {
     super.onWindowVisibilityChanged(visibility);
-    applyNewVisibility(/*animate=*/ false);
+    applyNewVisibility(/* animate= */ false);
   }
 
   /**
@@ -279,7 +285,7 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
     }
 
     ((DrawableWithAnimatedVisibilityChange) getCurrentDrawable())
-        .setVisible(visibleToUser(), /*restart=*/ false, animate);
+        .setVisible(visibleToUser(), /* restart= */ false, animate);
   }
 
   @Override
@@ -352,6 +358,12 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
   }
 
   // ******************** Helper methods **********************
+
+  @Override
+  protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+    super.onLayout(changed, left, top, right, bottom);
+    getCurrentDrawingDelegate().invalidateCachedPaths();
+  }
 
   /** Returns the corresponding drawable based on current indeterminate state. */
   @Override
@@ -435,7 +447,7 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
    * attached to a window and whether it and its ancestors are visible.
    */
   boolean visibleToUser() {
-    return ViewCompat.isAttachedToWindow(this)
+    return isAttachedToWindow()
         && getWindowVisibility() == View.VISIBLE
         && isEffectivelyVisible();
   }
@@ -515,7 +527,7 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
     DrawableWithAnimatedVisibilityChange newDrawable =
         (DrawableWithAnimatedVisibilityChange) getCurrentDrawable();
     if (newDrawable != null) {
-      newDrawable.setVisible(visibleToUser(), /*restart=*/ false, /*animate=*/ false);
+      newDrawable.setVisible(visibleToUser(), /* restart= */ false, /* animate= */ false);
     }
     if (newDrawable instanceof IndeterminateDrawable && visibleToUser()) {
       ((IndeterminateDrawable) newDrawable).getAnimatorDelegate().startAnimator();
@@ -664,6 +676,74 @@ public abstract class BaseProgressIndicator<S extends BaseProgressIndicatorSpec>
       spec.validateSpec();
       invalidate();
     }
+  }
+
+  /**
+   * Returns the amplitude of the indicator's amplitude in pixels.
+   *
+   * @see #setAmplitude(int)
+   */
+  @Px
+  public int getAmplitude() {
+    return spec.amplitude;
+  }
+
+  /**
+   * Sets the amplitude of the indicator's amplitude in pixels.
+   *
+   * @param amplitude The new amplitude in pixels.
+   * @see #getAmplitude()
+   */
+  public void setAmplitude(@Px int amplitude) {
+    if (spec.amplitude != amplitude) {
+      spec.amplitude = abs(amplitude);
+      requestLayout();
+    }
+  }
+
+  /**
+   * Returns the wavelength of the indicator's waveform in pixels.
+   *
+   * @see #setWavelength(int)
+   */
+  @Px
+  public int getWavelength() {
+    return spec.wavelength;
+  }
+
+  /**
+   * Sets the wavelength of the indicator's waveform in pixels.
+   *
+   * @param wavelength The new wavelength in pixels. No waves are drawn, if it equals to 0 with a
+   *     non-zero amplitude.
+   * @see #getWavelength()
+   */
+  public void setWavelength(@Px int wavelength) {
+    if (spec.wavelength != wavelength) {
+      spec.wavelength = abs(wavelength);
+      requestLayout();
+    }
+  }
+
+  /**
+   * Returns the speed of the indicator's waveform in pixels.
+   *
+   * @see #setSpeed(int)
+   */
+  @Px
+  public int getSpeed() {
+    return spec.speed;
+  }
+
+  /**
+   * Sets the speed of the indicator's waveform in pixels.
+   *
+   * @param speed The new speed in pixels.
+   * @see #getSpeed()
+   */
+  public void setSpeed(@Px int speed) {
+    spec.speed = speed;
+    getProgressDrawable().setEnforcedDrawing(spec.speed != 0);
   }
 
   /**

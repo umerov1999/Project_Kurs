@@ -69,7 +69,7 @@ abstract class AbstractPreference internal constructor(val key: String) {
     var iconRes: Int = DISABLED_RESOURCE_ID
     var icon: Drawable? = null
 
-    fun getTittle(context: Context): String {
+    fun getTitle(context: Context): String {
         if (title.isNotEmpty()) {
             return title.toString()
         } else if (titleRes != DISABLED_RESOURCE_ID) {
@@ -112,11 +112,8 @@ abstract class AbstractPreference internal constructor(val key: String) {
         collapsed = other.collapsed
     }
 
-    override fun equals(other: Any?): Boolean = when {
-        other == null -> false
-        this === other -> true
-        this::class.java == other::class.java && key == (other as AbstractPreference).key -> true
-        else -> false
+    override fun equals(other: Any?): Boolean {
+        return other is AbstractPreference && key == other.key
     }
 
     override fun hashCode() = key.hashCode()
@@ -399,7 +396,7 @@ open class Preference(key: String) : AbstractPreference(key) {
         val list = ArrayList<String>()
         var prScreen = pref.parent
         while (prScreen != null && prScreen.key != "root" && prScreen.key != "found_result") {
-            list.add(prScreen.getTittle(context))
+            list.add(prScreen.getTitle(context))
             prScreen = prScreen.parent
         }
         list.reverse()
@@ -407,7 +404,7 @@ open class Preference(key: String) : AbstractPreference(key) {
         for (i in list) {
             res.append(i).append(" -> ")
         }
-        res.append(pref.getTittle(context))
+        res.append(pref.getTitle(context))
         inSearchParentStory = res.toString()
     }
 
@@ -611,14 +608,8 @@ class PreferenceScreen internal constructor(builder: Builder) : Preference(build
         adapter?.notifyItemRangeChanged(position, itemCount)
     }
 
-    override fun equals(other: Any?): Boolean = when {
-        other == null -> false
-        this === other -> true
-        this::class.java == other::class.java &&
-                key == (other as PreferenceScreen).key &&
-                preferences == other.preferences -> true
-
-        else -> false
+    override fun equals(other: Any?): Boolean {
+        return other is PreferenceScreen && key == other.key && preferences == other.preferences
     }
 
     override fun hashCode() = (31 * key.hashCode()) + preferences.hashCode()

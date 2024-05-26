@@ -1,4 +1,4 @@
-include ":app", ":material", ":preference", ":recyclerview"
+include ":applabs", "coursework", ":picasso3", ":material", ":preference", ":recyclerview"
 include ":camera2"
 
 //include ":native"

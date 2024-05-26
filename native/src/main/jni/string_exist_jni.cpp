@@ -119,7 +119,7 @@ Java_dev_umerov_project_module_StringExist_clear(JNIEnv *, jobject, jlong pointe
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_StringExist_insert(JNIEnv *env, jobject, jlong pointer,
-                                                   jstring value) {
+                                                  jstring value) {
     if (!pointer) {
         return;
     }
@@ -135,7 +135,7 @@ Java_dev_umerov_project_module_StringExist_insert(JNIEnv *env, jobject, jlong po
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_StringExist_delete(JNIEnv *env, jobject, jlong pointer,
-                                                   jstring value) {
+                                                  jstring value) {
     if (!pointer) {
         return;
     }
@@ -151,7 +151,7 @@ Java_dev_umerov_project_module_StringExist_delete(JNIEnv *env, jobject, jlong po
 
 extern "C" JNIEXPORT jboolean
 Java_dev_umerov_project_module_StringExist_has(JNIEnv *env, jobject, jlong pointer, jstring value,
-                                                jboolean contains) {
+                                               jboolean contains) {
     if (!pointer) {
         return false;
     }
@@ -167,7 +167,7 @@ Java_dev_umerov_project_module_StringExist_has(JNIEnv *env, jobject, jlong point
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_StringExist_lockMutex(JNIEnv *, jobject, jlong pointer,
-                                                      jboolean lock) {
+                                                     jboolean lock) {
     if (!pointer) {
         return;
     }
@@ -186,7 +186,7 @@ Java_dev_umerov_project_module_BufferWriteNative_allocateBuffer(JNIEnv *, jobjec
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_BufferWriteNative_putByteArray(JNIEnv *env, jobject, jlong pointer,
-                                                               jbyteArray array, jint size) {
+                                                              jbyteArray array, jint size) {
     if (!pointer || size <= 0) {
         return;
     }
@@ -211,7 +211,7 @@ Java_dev_umerov_project_module_BufferWriteNative_putByteArray(JNIEnv *env, jobje
 
 extern "C" JNIEXPORT jbyteArray
 Java_dev_umerov_project_module_BufferWriteNative_compressLZ4Buffer(JNIEnv *env, jobject,
-                                                                    jlong pointer) {
+                                                                   jlong pointer) {
     if (!pointer) {
         return nullptr;
     }
@@ -238,7 +238,7 @@ Java_dev_umerov_project_module_BufferWriteNative_compressLZ4Buffer(JNIEnv *env, 
 
 extern "C" JNIEXPORT jbyteArray
 Java_dev_umerov_project_module_BufferWriteNative_deCompressLZ4Buffer(JNIEnv *env, jobject,
-                                                                      jlong pointer) {
+                                                                     jlong pointer) {
     if (!pointer) {
         return nullptr;
     }
@@ -263,7 +263,7 @@ Java_dev_umerov_project_module_BufferWriteNative_deCompressLZ4Buffer(JNIEnv *env
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_BufferWriteNative_putChar(JNIEnv *, jobject, jlong pointer,
-                                                          jbyte value) {
+                                                         jbyte value) {
     if (!pointer) {
         return;
     }
@@ -321,7 +321,7 @@ Java_dev_umerov_project_module_StringHash_getSha1(JNIEnv *env, jobject, jstring 
 
 extern "C" JNIEXPORT jstring
 Java_dev_umerov_project_module_StringHash_getSha1ByteArray(JNIEnv *env, jobject,
-                                                            jbyteArray value) {
+                                                           jbyteArray value) {
     jboolean isCopy;
     jint length = env->GetArrayLength(value);
     jbyte *buf = env->GetByteArrayElements(value, &isCopy);
@@ -338,7 +338,7 @@ Java_dev_umerov_project_module_StringHash_getSha1ByteArray(JNIEnv *env, jobject,
 
 extern "C" JNIEXPORT jint
 Java_dev_umerov_project_module_StringHash_getCRC32(JNIEnv *env, jobject,
-                                                    jstring value) {
+                                                   jstring value) {
     char const *textString = SafeGetStringUTFChars(env, value, nullptr);
     if (!textString) {
         return 0;

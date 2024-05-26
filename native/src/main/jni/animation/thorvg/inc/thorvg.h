@@ -1229,8 +1229,8 @@ public:
      * @param[in] data A pointer to a memory location where the content of the picture file is stored.
      * @param[in] size The size in bytes of the memory occupied by the @p data.
      * @param[in] mimeType Mimetype or extension of data such as "jpg", "jpeg", "lottie", "svg", "svg+xml", "png", etc. In case an empty string or an unknown type is provided, the loaders will be tried one by one.
-     * @param[in] copy If @c true the data are copied into the engine local buffer, otherwise they are not.
      * @param[in] rpath A resource directory path, if the @p data needs to access any external resources.
+     * @param[in] copy If @c true the data are copied into the engine local buffer, otherwise they are not.
      *
      * @retval Result::Success When succeed.
      * @retval Result::InvalidArguments In case no data are provided or the @p size is zero or less.
@@ -1675,6 +1675,7 @@ public:
      * @param[in] h The height (in pixels) of the raster image.
      *
      * @warning This API is experimental and not officially supported. It may be modified or removed in future versions.
+     * @warning Drawing on the main surface is currently not permitted. If the identifier (@p id) is set to @c 0, the operation will be aborted.
      *
      * @note Currently, this only allows the GL_RGBA8 color space format.
      * @note Experimental API
@@ -1785,7 +1786,7 @@ public:
  *
  * This class supports the display and control of animation frames.
  *
- * @note Experimental API
+ * @since 0.13
  */
 
 class TVG_API Animation
@@ -1802,9 +1803,12 @@ public:
      * @retval Result::InsufficientCondition if the given @p no is the same as the current frame value.
      * @retval Result::NonSupport The current Picture data does not support animations.
      *
+     * @note For efficiency, ThorVG ignores updates to the new frame value if the difference from the current frame value
+     *       is less than 0.001. In such cases, it returns @c Result::InsufficientCondition.
+     *       Values less than 0.001 may be disregarded and may not be accurately retained by the Animation.
+     *
      * @see totalFrame()
      *
-     * @note Experimental API
      */
     Result frame(float no) noexcept;
 
@@ -1819,7 +1823,6 @@ public:
      *
      * @warning The picture instance is owned by Animation. It should not be deleted manually.
      *
-     * @note Experimental API
      */
     Picture* picture() const noexcept;
 
@@ -1833,7 +1836,6 @@ public:
      * @see Animation::frame(float no)
      * @see Animation::totalFrame()
      *
-     * @note Experimental API
      */
     float curFrame() const noexcept;
 
@@ -1845,7 +1847,6 @@ public:
      * @note Frame numbering starts from 0.
      * @note If the Picture is not properly configured, this function will return 0.
      *
-     * @note Experimental API
      */
     float totalFrame() const noexcept;
 
@@ -1856,16 +1857,52 @@ public:
      *
      * @note If the Picture is not properly configured, this function will return 0.
      *
-     * @% Experimental API
      */
     float duration() const noexcept;
+
+    /**
+     * @brief Specifies the playback segment of the animation.
+     *
+     * The set segment is designated as the play area of the animation.
+     * This is useful for playing a specific segment within the entire animation.
+     * After setting, the number of animation frames and the playback time are calculated
+     * by mapping the playback segment as the entire range.
+     *
+     * @param[in] begin segment start.
+     * @param[in] end segment end.
+     *
+     * @retval Result::Success When succeed.
+     * @retval Result::InsufficientCondition In case the animation is not loaded.
+     * @retval Result::InvalidArguments When the given parameter is invalid.
+     * @retval Result::NonSupport When it's not animatable.
+     *
+     * @note Range from 0.0~1.0
+     * @note If a marker has been specified, its range will be disregarded.
+     * @see LottieAnimation::segment(const char* marker)
+     * @note Experimental API
+     */
+    Result segment(float begin, float end) noexcept;
+
+    /**
+     * @brief Gets the current segment.
+     *
+     * @param[out] begin segment start.
+     * @param[out] end segment end.
+     *
+     * @retval Result::Success When succeed.
+     * @retval Result::InsufficientCondition In case the animation is not loaded.
+     * @retval Result::InvalidArguments When the given parameter is invalid.
+     * @retval Result::NonSupport When it's not animatable.
+     *
+     * @note Experimental API
+     */
+    Result segment(float* begin, float* end = nullptr) noexcept;
 
     /**
      * @brief Creates a new Animation object.
      *
      * @return A new Animation object.
      *
-     * @note Experimental API
      */
     static std::unique_ptr<Animation> gen() noexcept;
 

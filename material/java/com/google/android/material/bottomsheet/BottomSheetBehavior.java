@@ -29,7 +29,6 @@ import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
-import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Parcel;
@@ -308,6 +307,9 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
 
   private boolean draggable = true;
 
+  private boolean draggableOnNestedScroll = true;
+  private boolean draggableOnNestedScrollLastDragIgnored;
+
   @State int state = STATE_COLLAPSED;
 
   @State int lastStableState = STATE_COLLAPSED;
@@ -400,6 +402,9 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
     setSkipCollapsed(
         a.getBoolean(R.styleable.BottomSheetBehavior_Layout_behavior_skipCollapsed, false));
     setDraggable(a.getBoolean(R.styleable.BottomSheetBehavior_Layout_behavior_draggable, true));
+    setDraggableOnNestedScroll(
+        a.getBoolean(
+            R.styleable.BottomSheetBehavior_Layout_behavior_draggableOnNestedScroll, true));
     setSaveFlags(a.getInt(R.styleable.BottomSheetBehavior_Layout_behavior_saveFlags, SAVE_NONE));
     setHalfExpandedRatio(
         a.getFloat(R.styleable.BottomSheetBehavior_Layout_behavior_halfExpandedRatio, 0.5f));
@@ -541,7 +546,7 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
   @Override
   public boolean onLayoutChild(
       @NonNull CoordinatorLayout parent, @NonNull final V child, int layoutDirection) {
-    if (ViewCompat.getFitsSystemWindows(parent) && !ViewCompat.getFitsSystemWindows(child)) {
+    if (parent.getFitsSystemWindows() && !child.getFitsSystemWindows()) {
       child.setFitsSystemWindows(true);
     }
 
@@ -556,7 +561,7 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
       // Only set MaterialShapeDrawable as background if shapeTheming is enabled, otherwise will
       // default to android:background declared in styles or layout.
       if (materialShapeDrawable != null) {
-        ViewCompat.setBackground(child, materialShapeDrawable);
+        child.setBackground(materialShapeDrawable);
         // Use elevation attr if set on bottomsheet; otherwise, use elevation of child view.
         materialShapeDrawable.setElevation(
             elevation == -1 ? ViewCompat.getElevation(child) : elevation);
@@ -564,9 +569,8 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
         ViewCompat.setBackgroundTintList(child, backgroundTint);
       }
       updateAccessibilityActions();
-      if (ViewCompat.getImportantForAccessibility(child)
-          == ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_AUTO) {
-        ViewCompat.setImportantForAccessibility(child, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_YES);
+      if (child.getImportantForAccessibility() == View.IMPORTANT_FOR_ACCESSIBILITY_AUTO) {
+        child.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
       }
     }
     if (viewDragHelper == null) {
@@ -743,7 +747,15 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
     }
     int currentTop = child.getTop();
     int newTop = currentTop - dy;
-    if (dy > 0) { // Upward
+    if (dy > 0) { // Upward swipe
+      if (!nestedScrolled
+          && !draggableOnNestedScroll
+          && target == scrollingChild
+          && target.canScrollVertically(1)) {
+        // Prevent dragging if draggableOnNestedScroll=false and we can scroll the scrolling child.
+        draggableOnNestedScrollLastDragIgnored = true;
+        return;
+      }
       if (newTop < getExpandedOffset()) {
         consumed[1] = currentTop - getExpandedOffset();
         ViewCompat.offsetTopAndBottom(child, -consumed[1]);
@@ -758,8 +770,14 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
         ViewCompat.offsetTopAndBottom(child, -dy);
         setStateInternal(STATE_DRAGGING);
       }
-    } else if (dy < 0) { // Downward
-      if (!target.canScrollVertically(-1)) {
+    } else if (dy < 0) { // Downward swipe
+      boolean canScrollUp = target.canScrollVertically(-1);
+      if (!nestedScrolled && !draggableOnNestedScroll && target == scrollingChild && canScrollUp) {
+        // Prevent dragging if draggableOnNestedScroll=false and we can scroll the scrolling child.
+        draggableOnNestedScrollLastDragIgnored = true;
+        return;
+      }
+      if (!canScrollUp) {
         if (newTop <= collapsedOffset || canBeHiddenByDragging()) {
           if (!draggable) {
             // Prevent dragging
@@ -779,6 +797,7 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
     dispatchOnSlide(child.getTop());
     lastNestedScrollDy = dy;
     nestedScrolled = true;
+    draggableOnNestedScrollLastDragIgnored = false;
   }
 
   @Override
@@ -879,7 +898,7 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
 
     if (isNestedScrollingCheckEnabled() && nestedScrollingChildRef != null) {
       return target == nestedScrollingChildRef.get()
-          && (state != STATE_EXPANDED
+          && ((state != STATE_EXPANDED && !draggableOnNestedScrollLastDragIgnored)
               || super.onNestedPreFling(coordinatorLayout, child, target, velocityX, velocityY));
     } else {
       return false;
@@ -1172,7 +1191,7 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
   }
 
   /**
-   * Sets whether this bottom sheet is can be collapsed/expanded by dragging. Note: When disabling
+   * Sets whether this bottom sheet can be collapsed/expanded by dragging. Note: When disabling
    * dragging, an app will require to implement a custom way to expand/collapse the bottom sheet
    *
    * @param draggable {@code false} to prevent dragging the sheet to collapse and expand
@@ -1184,6 +1203,22 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
 
   public boolean isDraggable() {
     return draggable;
+  }
+
+  /**
+   * Sets whether this bottom sheet can be collapsed/expanded by dragging on the nested scrolling
+   * child view. Default is true.
+   *
+   * @param draggableOnNestedScroll {@code false} to prevent dragging the nested scrolling child
+   * view to collapse and expand the sheet
+   * @attr ref com.google.android.material.R.styleable#BottomSheetBehavior_Layout_behavior_draggableOnNestedScroll
+   */
+  public void setDraggableOnNestedScroll(boolean draggableOnNestedScroll) {
+    this.draggableOnNestedScroll = draggableOnNestedScroll;
+  }
+
+  public boolean isDraggableOnNestedScroll() {
+    return draggableOnNestedScroll;
   }
 
   /*
@@ -1347,7 +1382,7 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
 
   private boolean isLayouting(V child) {
     ViewParent parent = child.getParent();
-    return parent != null && parent.isLayoutRequested() && ViewCompat.isAttachedToWindow(child);
+    return parent != null && parent.isLayoutRequested() && child.isAttachedToWindow();
   }
 
   /**
@@ -2166,7 +2201,7 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
       }
       this.targetState = targetState;
       if (!isContinueSettlingRunnablePosted) {
-        ViewCompat.postOnAnimation(viewRef.get(), continueSettlingRunnable);
+        viewRef.get().postOnAnimation(continueSettlingRunnable);
         isContinueSettlingRunnablePosted = true;
       }
     }
@@ -2294,7 +2329,7 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
 
     CoordinatorLayout parent = (CoordinatorLayout) viewParent;
     final int childCount = parent.getChildCount();
-    if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) && expanded) {
+    if (expanded) {
       if (importantForAccessibilityMap == null) {
         importantForAccessibilityMap = new HashMap<>(childCount);
       } else {
@@ -2311,19 +2346,16 @@ public class BottomSheetBehavior<V extends View> extends CoordinatorLayout.Behav
 
       if (expanded) {
         // Saves the important for accessibility value of the child view.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-          importantForAccessibilityMap.put(child, child.getImportantForAccessibility());
-        }
+        importantForAccessibilityMap.put(child, child.getImportantForAccessibility());
         if (updateImportantForAccessibilityOnSiblings) {
-          ViewCompat.setImportantForAccessibility(
-              child, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+          child.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         }
       } else {
         if (updateImportantForAccessibilityOnSiblings
             && importantForAccessibilityMap != null
             && importantForAccessibilityMap.containsKey(child)) {
           // Restores the original important for accessibility value of the child view.
-          ViewCompat.setImportantForAccessibility(child, importantForAccessibilityMap.get(child));
+          child.setImportantForAccessibility(importantForAccessibilityMap.get(child));
         }
       }
     }

@@ -24,11 +24,8 @@ import android.graphics.Path.Direction;
 import android.graphics.Path.Op;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.annotation.RestrictTo;
 import androidx.annotation.UiThread;
 
@@ -41,6 +38,8 @@ public class ShapeAppearancePathProvider {
 
   /**
    * Listener called every time a {@link ShapePath} is created for a corner or an edge treatment.
+   *
+   * @hide
    */
   @RestrictTo(LIBRARY_GROUP)
   public interface PathListener {
@@ -76,6 +75,7 @@ public class ShapeAppearancePathProvider {
     }
   }
 
+  /** @hide */
   @UiThread
   @RestrictTo(LIBRARY_GROUP)
   @NonNull
@@ -107,10 +107,42 @@ public class ShapeAppearancePathProvider {
    * @param bounds the desired bounds for the path.
    * @param pathListener the path
    * @param path the returned path out-var.
+   *
+   * @hide
    */
   @RestrictTo(LIBRARY_GROUP)
   public void calculatePath(
       ShapeAppearanceModel shapeAppearanceModel,
+      float interpolation,
+      RectF bounds,
+      PathListener pathListener,
+      @NonNull Path path) {
+    calculatePath(
+        shapeAppearanceModel,
+        MaterialShapeDrawable.DEFAULT_INTERPOLATION_START_SHAPE_APPEARANCE_MODEL,
+        interpolation,
+        bounds,
+        pathListener,
+        path);
+  }
+
+  /**
+   * Writes the given {@link ShapeAppearanceModel} to {@code path}
+   *
+   * @param shapeAppearanceModel The shape to be applied in the path.
+   * @param interpolationStartShapeAppearanceModel The shape to be applied in the path when
+   *     interpolation is 0.
+   * @param interpolation the desired interpolation.
+   * @param bounds the desired bounds for the path.
+   * @param pathListener the path
+   * @param path the returned path out-var.
+   *
+   * @hide
+   */
+  @RestrictTo(LIBRARY_GROUP)
+  public void calculatePath(
+      ShapeAppearanceModel shapeAppearanceModel,
+      @NonNull ShapeAppearanceModel interpolationStartShapeAppearanceModel,
       float interpolation,
       RectF bounds,
       PathListener pathListener,
@@ -121,7 +153,12 @@ public class ShapeAppearancePathProvider {
     boundsPath.addRect(bounds, Direction.CW);
     ShapeAppearancePathSpec spec =
         new ShapeAppearancePathSpec(
-            shapeAppearanceModel, interpolation, bounds, pathListener, path);
+            shapeAppearanceModel,
+            interpolationStartShapeAppearanceModel,
+            interpolation,
+            bounds,
+            pathListener,
+            path);
 
     // Calculate the transformations (rotations and translations) necessary for each edge and
     // corner treatment.
@@ -139,15 +176,17 @@ public class ShapeAppearancePathProvider {
     overlappedEdgePath.close();
 
     // Union with the edge paths that had an intersection to handle overlaps.
-    if (VERSION.SDK_INT >= VERSION_CODES.KITKAT && !overlappedEdgePath.isEmpty()) {
+    if (!overlappedEdgePath.isEmpty()) {
       path.op(overlappedEdgePath, Op.UNION);
     }
   }
 
   private void setCornerPathAndTransform(@NonNull ShapeAppearancePathSpec spec, int index) {
     CornerSize size = getCornerSizeForIndex(index, spec.shapeAppearanceModel);
+    CornerSize startSize =
+        getCornerSizeForIndex(index, spec.interpolationStartShapeAppearanceModel);
     getCornerTreatmentForIndex(index, spec.shapeAppearanceModel)
-        .getCornerPath(cornerPaths[index], 90, spec.interpolation, spec.bounds, size);
+        .getCornerPath(cornerPaths[index], 90, spec.interpolation, spec.bounds, startSize, size);
 
     float edgeAngle = angleOfEdge(index);
     cornerTransforms[index].reset();
@@ -202,7 +241,6 @@ public class ShapeAppearancePathProvider {
     shapePath.applyToPath(edgeTransforms[index], edgePath);
 
     if (edgeIntersectionCheckEnabled
-        && VERSION.SDK_INT >= VERSION_CODES.KITKAT
         && (edgeTreatment.forceIntersection()
             || pathOverlapsCorner(edgePath, index)
             || pathOverlapsCorner(edgePath, nextIndex))) {
@@ -229,7 +267,6 @@ public class ShapeAppearancePathProvider {
     }
   }
 
-  @RequiresApi(VERSION_CODES.KITKAT)
   private boolean pathOverlapsCorner(Path edgePath, int index) {
     cornerPath.reset();
     cornerPaths[index].applyToPath(cornerTransforms[index], cornerPath);
@@ -333,6 +370,7 @@ public class ShapeAppearancePathProvider {
   static final class ShapeAppearancePathSpec {
 
     @NonNull public final ShapeAppearanceModel shapeAppearanceModel;
+    @NonNull public final ShapeAppearanceModel interpolationStartShapeAppearanceModel;
     @NonNull public final Path path;
     @NonNull public final RectF bounds;
 
@@ -342,12 +380,14 @@ public class ShapeAppearancePathProvider {
 
     ShapeAppearancePathSpec(
         @NonNull ShapeAppearanceModel shapeAppearanceModel,
+        @NonNull ShapeAppearanceModel interpolationStartShapeAppearanceModel,
         float interpolation,
         RectF bounds,
         @Nullable PathListener pathListener,
         Path path) {
       this.pathListener = pathListener;
       this.shapeAppearanceModel = shapeAppearanceModel;
+      this.interpolationStartShapeAppearanceModel = interpolationStartShapeAppearanceModel;
       this.interpolation = interpolation;
       this.bounds = bounds;
       this.path = path;

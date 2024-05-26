@@ -412,7 +412,7 @@ Java_dev_umerov_project_module_parcel_ParcelNative_init(JNIEnv *, jobject, jint 
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_forceDestroy(JNIEnv *, jobject,
-                                                                 jlong parcel_native) {
+                                                                jlong parcel_native) {
     if (!parcel_native) {
         return;
     }
@@ -423,7 +423,7 @@ Java_dev_umerov_project_module_parcel_ParcelNative_forceDestroy(JNIEnv *, jobjec
 
 extern "C" JNIEXPORT jint
 Java_dev_umerov_project_module_parcel_ParcelNative_getFlags(JNIEnv *, jobject,
-                                                             jlong parcel_native) {
+                                                            jlong parcel_native) {
     if (!parcel_native) {
         return 0;
     }
@@ -433,8 +433,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_getFlags(JNIEnv *, jobject,
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putBoolean(JNIEnv *, jobject,
-                                                               jlong parcel_native,
-                                                               jboolean value) {
+                                                              jlong parcel_native,
+                                                              jboolean value) {
     if (!parcel_native) {
         return;
     }
@@ -444,7 +444,7 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putBoolean(JNIEnv *, jobject,
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putByte(JNIEnv *, jobject, jlong parcel_native,
-                                                            jbyte value) {
+                                                           jbyte value) {
     if (!parcel_native) {
         return;
     }
@@ -454,7 +454,7 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putByte(JNIEnv *, jobject, jl
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putInt(JNIEnv *, jobject, jlong parcel_native,
-                                                           jint value) {
+                                                          jint value) {
     if (!parcel_native) {
         return;
     }
@@ -464,8 +464,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putInt(JNIEnv *, jobject, jlo
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putFirstInt(JNIEnv *, jobject,
-                                                                jlong parcel_native,
-                                                                jint value) {
+                                                               jlong parcel_native,
+                                                               jint value) {
     if (!parcel_native) {
         return;
     }
@@ -475,7 +475,7 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putFirstInt(JNIEnv *, jobject
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putLong(JNIEnv *, jobject, jlong parcel_native,
-                                                            jlong value) {
+                                                           jlong value) {
     if (!parcel_native) {
         return;
     }
@@ -485,7 +485,7 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putLong(JNIEnv *, jobject, jl
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putFloat(JNIEnv *, jobject, jlong parcel_native,
-                                                             jfloat value) {
+                                                            jfloat value) {
     if (!parcel_native) {
         return;
     }
@@ -495,8 +495,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putFloat(JNIEnv *, jobject, j
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putDouble(JNIEnv *, jobject,
-                                                              jlong parcel_native,
-                                                              jdouble value) {
+                                                             jlong parcel_native,
+                                                             jdouble value) {
     if (!parcel_native) {
         return;
     }
@@ -506,7 +506,7 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putDouble(JNIEnv *, jobject,
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putNullString(JNIEnv *env, jobject,
-                                                                  jlong parcel_native) {
+                                                                 jlong parcel_native) {
     if (!parcel_native) {
         return;
     }
@@ -516,8 +516,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putNullString(JNIEnv *env, jo
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putString(JNIEnv *env, jobject,
-                                                              jlong parcel_native,
-                                                              jstring value) {
+                                                             jlong parcel_native,
+                                                             jstring value) {
     if (!parcel_native) {
         return;
     }
@@ -531,8 +531,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putString(JNIEnv *env, jobjec
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putBinary(JNIEnv *env, jobject,
-                                                              jlong parcel_native,
-                                                              jbyteArray value) {
+                                                             jlong parcel_native,
+                                                             jbyteArray value) {
     if (!parcel_native) {
         return;
     }
@@ -549,7 +549,7 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putBinary(JNIEnv *env, jobjec
 
 extern "C" JNIEXPORT void
 Java_dev_umerov_project_module_parcel_ParcelNative_putNullBinary(JNIEnv *env, jobject,
-                                                                  jlong parcel_native) {
+                                                                 jlong parcel_native) {
     if (!parcel_native) {
         return;
     }
@@ -559,8 +559,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_putNullBinary(JNIEnv *env, jo
 
 extern "C" JNIEXPORT jboolean
 Java_dev_umerov_project_module_parcel_ParcelNative_readBoolean(JNIEnv *env, jobject,
-                                                                jlong parcel_native,
-                                                                jobject listener) {
+                                                               jlong parcel_native,
+                                                               jobject listener) {
     if (!parcel_native) {
         return 0;
     }
@@ -581,8 +581,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_readBoolean(JNIEnv *env, jobj
 
 extern "C" JNIEXPORT jbyte
 Java_dev_umerov_project_module_parcel_ParcelNative_readByte(JNIEnv *env, jobject,
-                                                             jlong parcel_native,
-                                                             jobject listener) {
+                                                            jlong parcel_native,
+                                                            jobject listener) {
     if (!parcel_native) {
         return 0;
     }
@@ -603,8 +603,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_readByte(JNIEnv *env, jobject
 
 extern "C" JNIEXPORT jint
 Java_dev_umerov_project_module_parcel_ParcelNative_readInt(JNIEnv *env, jobject,
-                                                            jlong parcel_native,
-                                                            jobject listener) {
+                                                           jlong parcel_native,
+                                                           jobject listener) {
     if (!parcel_native) {
         return 0;
     }
@@ -625,8 +625,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_readInt(JNIEnv *env, jobject,
 
 extern "C" JNIEXPORT jlong
 Java_dev_umerov_project_module_parcel_ParcelNative_readLong(JNIEnv *env, jobject,
-                                                             jlong parcel_native,
-                                                             jobject listener) {
+                                                            jlong parcel_native,
+                                                            jobject listener) {
     if (!parcel_native) {
         return 0;
     }
@@ -647,8 +647,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_readLong(JNIEnv *env, jobject
 
 extern "C" JNIEXPORT jfloat
 Java_dev_umerov_project_module_parcel_ParcelNative_readFloat(JNIEnv *env, jobject,
-                                                              jlong parcel_native,
-                                                              jobject listener) {
+                                                             jlong parcel_native,
+                                                             jobject listener) {
     if (!parcel_native) {
         return 0;
     }
@@ -669,8 +669,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_readFloat(JNIEnv *env, jobjec
 
 extern "C" JNIEXPORT jdouble
 Java_dev_umerov_project_module_parcel_ParcelNative_readDouble(JNIEnv *env, jobject,
-                                                               jlong parcel_native,
-                                                               jobject listener) {
+                                                              jlong parcel_native,
+                                                              jobject listener) {
     if (!parcel_native) {
         return 0;
     }
@@ -692,8 +692,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_readDouble(JNIEnv *env, jobje
 
 extern "C" JNIEXPORT jstring
 Java_dev_umerov_project_module_parcel_ParcelNative_readString(JNIEnv *env, jobject,
-                                                               jlong parcel_native,
-                                                               jobject listener) {
+                                                              jlong parcel_native,
+                                                              jobject listener) {
     if (!parcel_native) {
         return env->NewStringUTF("error");
     }
@@ -720,8 +720,8 @@ Java_dev_umerov_project_module_parcel_ParcelNative_readString(JNIEnv *env, jobje
 
 extern "C" JNIEXPORT jbyteArray
 Java_dev_umerov_project_module_parcel_ParcelNative_readBinary(JNIEnv *env, jobject,
-                                                               jlong parcel_native,
-                                                               jobject listener) {
+                                                              jlong parcel_native,
+                                                              jobject listener) {
     if (!parcel_native) {
         return nullptr;
     }
