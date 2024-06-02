@@ -4,12 +4,13 @@ import android.graphics.Color
 import androidx.annotation.ColorInt
 import dev.umerov.project.R
 import dev.umerov.project.fragment.base.RxSupportPresenter
+import dev.umerov.project.toColor
 
 class Lab5Presenter : RxSupportPresenter<ILab5View>() {
     private var isFirst = true
 
     @ColorInt
-    private var currentColor: Int = Color.parseColor("#000000")
+    private var currentColor: Int = "#000000".toColor()
     private var updatingControl: Boolean = false
 
     fun fireUpdateRed(checked: Boolean) {

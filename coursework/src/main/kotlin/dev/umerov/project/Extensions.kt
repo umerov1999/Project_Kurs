@@ -6,11 +6,13 @@ import android.animation.PropertyValuesHolder
 import android.content.Intent
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
 import android.view.View
+import androidx.annotation.ColorInt
 import dev.umerov.project.util.rxutils.RxUtils
 import dev.umerov.project.util.rxutils.io.AndroidSchedulers
 import dev.umerov.project.util.serializeble.json.Json
@@ -497,4 +499,14 @@ fun Parcel.putBoolean(value: Boolean) {
 
 fun Parcel.getBoolean(): Boolean {
     return readByte() != 0.toByte()
+}
+
+@ColorInt
+fun String.toColor(): Int {
+    try {
+        return Color.parseColor(this)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+    return Color.RED
 }

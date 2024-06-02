@@ -1,7 +1,6 @@
 package dev.umerov.project.fragment.main.lab4
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -21,6 +20,7 @@ import dev.umerov.project.activity.ActivityUtils.supportToolbarFor
 import dev.umerov.project.fragment.base.BaseMvpFragment
 import dev.umerov.project.listener.OnSectionResumeCallback
 import dev.umerov.project.model.SectionItem
+import dev.umerov.project.toColor
 import dev.umerov.project.util.Utils
 
 class Lab4Fragment : BaseMvpFragment<Lab4Presenter, ILab4View>(),
@@ -71,9 +71,9 @@ class Lab4Fragment : BaseMvpFragment<Lab4Presenter, ILab4View>(),
                 v.weight = 1F
                 frame.layoutParams = v
                 if (i == 0) {
-                    frame.setBackgroundColor(Color.parseColor("#FFD5AE"))
+                    frame.setBackgroundColor("#FFD5AE".toColor())
                 } else {
-                    frame.setBackgroundColor(Color.parseColor("#FFA5A2"))
+                    frame.setBackgroundColor("#FFA5A2".toColor())
                 }
 
                 val grid = GridLayout(requireActivity())

@@ -1,11 +1,11 @@
 package dev.umerov.project.model.main.labs
 
-import android.graphics.Color
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.annotation.ColorInt
 import dev.umerov.project.getBoolean
 import dev.umerov.project.putBoolean
+import dev.umerov.project.toColor
 import dev.umerov.project.util.StepArrayList
 
 class Product : Parcelable {
@@ -26,7 +26,7 @@ class Product : Parcelable {
         private set
 
     @ColorInt
-    var color: Int = Color.parseColor("#2D566B")
+    var color: Int = "#2D566B".toColor()
         private set
 
     var tempIsAnimation = false
@@ -56,7 +56,7 @@ class Product : Parcelable {
     }
 
     fun fetchColor(): Product {
-        color = colors.getNext() ?: Color.parseColor("#2D566B")
+        color = colors.getNext() ?: "#2D566B".toColor()
         return this
     }
 
@@ -104,11 +104,11 @@ class Product : Parcelable {
     companion object {
         private val colors = StepArrayList(
             arrayListOf(
-                Color.parseColor("#AA1656"),
-                Color.parseColor("#861E6A"),
-                Color.parseColor("#227585"),
-                Color.parseColor("#2D566B")
-            )
+                "#AA1656".toColor(),
+                "#861E6A".toColor(),
+                "#227585".toColor(),
+                "#2D566B".toColor()
+            ), StepArrayList.PRODUCT
         )
 
         @JvmField

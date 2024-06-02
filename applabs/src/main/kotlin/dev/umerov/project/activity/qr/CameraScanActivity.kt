@@ -55,6 +55,7 @@ import dev.umerov.project.activity.slidr.Slidr
 import dev.umerov.project.activity.slidr.model.SlidrConfig
 import dev.umerov.project.nonNullNoEmpty
 import dev.umerov.project.settings.CurrentTheme
+import dev.umerov.project.toColor
 import dev.umerov.project.util.AppPerms
 import dev.umerov.project.util.AppPerms.requestPermissionsResultAbs
 import dev.umerov.project.util.Utils
@@ -329,9 +330,9 @@ class CameraScanActivity : NoMainActivity() {
         }
 
         init {
-            cornerPaint.color = Color.parseColor("#ffffff")
-            paint.color = Color.parseColor("#88000000")
-            laserPaint.color = Color.parseColor("#aaff0000")
+            cornerPaint.color = "#ffffff".toColor()
+            paint.color = "#88000000".toColor()
+            laserPaint.color = "#aaff0000".toColor()
             pointPaint.color = CurrentTheme.getColorPrimary(context)
         }
 

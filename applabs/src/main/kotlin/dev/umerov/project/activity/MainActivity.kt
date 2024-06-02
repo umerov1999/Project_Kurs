@@ -39,6 +39,8 @@ import dev.umerov.project.fragment.PreferencesFragment
 import dev.umerov.project.fragment.SecurityPreferencesFragment
 import dev.umerov.project.fragment.filemanager.FileManagerFragment
 import dev.umerov.project.fragment.main.MainFragment
+import dev.umerov.project.fragment.main.finance.FinanceOperationsFragment
+import dev.umerov.project.fragment.main.finance.FinanceTabsFragment
 import dev.umerov.project.fragment.main.lab1.Lab1Fragment
 import dev.umerov.project.fragment.main.lab10.Lab10Fragment
 import dev.umerov.project.fragment.main.lab11.Lab11TabsFragment
@@ -509,6 +511,14 @@ class MainActivity : AppCompatActivity(), OnSectionResumeCallback, AppStyleable,
 
             Place.SHOPPING_PRODUCTS -> {
                 attachToFront(ShoppingProductsFragment.newInstance(args))
+            }
+
+            Place.FINANCE -> {
+                attachToFront(FinanceTabsFragment.newInstance())
+            }
+
+            Place.FINANCE_OPERATIONS -> {
+                attachToFront(FinanceOperationsFragment.newInstance(args))
             }
         }
     }

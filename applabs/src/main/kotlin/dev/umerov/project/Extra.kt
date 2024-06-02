@@ -14,4 +14,6 @@ object Extra {
     const val POSITION = "position"
     const val PLACE = "place"
     const val IS_POST = "is_post"
+    const val IS_CREDIT_CARD = "is_credit_card"
+    const val OWNER_ID = "owner_id"
 }

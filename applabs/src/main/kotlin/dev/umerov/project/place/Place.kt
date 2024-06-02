@@ -137,6 +137,9 @@ open class Place : Parcelable {
         const val SHOPPING_LIST = 28
         const val SHOPPING_PRODUCTS = 29
 
+        const val FINANCE = 30
+        const val FINANCE_OPERATIONS = 31
+
         @JvmField
         val CREATOR: Parcelable.Creator<Place> = object : Parcelable.Creator<Place> {
             override fun createFromParcel(p: Parcel): Place {

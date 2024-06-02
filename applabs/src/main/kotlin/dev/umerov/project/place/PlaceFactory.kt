@@ -1,6 +1,7 @@
 package dev.umerov.project.place
 
 import dev.umerov.project.fragment.filemanager.FileManagerFragment
+import dev.umerov.project.fragment.main.finance.FinanceOperationsFragment
 import dev.umerov.project.fragment.main.shoppingproducts.ShoppingProductsFragment
 import dev.umerov.project.model.main.labs.ShoppingList
 
@@ -126,5 +127,16 @@ object PlaceFactory {
     ): Place {
         return Place(Place.SHOPPING_PRODUCTS)
             .setArguments(ShoppingProductsFragment.buildArgs(shoppingList))
+    }
+
+    fun getFinancePlace(): Place {
+        return Place(Place.FINANCE)
+    }
+
+    fun getFinanceOperationsPlace(
+        ownerId: Long
+    ): Place {
+        return Place(Place.FINANCE_OPERATIONS)
+            .setArguments(FinanceOperationsFragment.buildArgs(ownerId))
     }
 }

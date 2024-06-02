@@ -5,7 +5,7 @@ import dev.umerov.project.util.Utils
 import java.util.Locale
 
 object Constants {
-    const val DATABASE_VERSION = 4
+    const val DATABASE_VERSION = 6
 
     const val PICASSO_TAG = "picasso_tag"
     const val EXPORT_SETTINGS_FORMAT = 1

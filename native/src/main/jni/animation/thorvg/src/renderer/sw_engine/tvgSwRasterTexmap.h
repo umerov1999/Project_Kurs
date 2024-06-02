@@ -833,11 +833,13 @@ static AASpans* _AASpans(float ymin, float ymax, const SwImage* image, const SwB
     //Initialize X range
     auto height = yEnd - yStart;
 
-    aaSpans->lines = static_cast<AALine*>(calloc(height, sizeof(AALine)));
+    aaSpans->lines = static_cast<AALine*>(malloc(height * sizeof(AALine)));
 
     for (int32_t i = 0; i < height; i++) {
         aaSpans->lines[i].x[0] = INT32_MAX;
         aaSpans->lines[i].x[1] = INT32_MIN;
+        aaSpans->lines[i].length[0] = 0;
+        aaSpans->lines[i].length[1] = 0;
     }
     return aaSpans;
 }
@@ -885,7 +887,7 @@ static void _calcHorizCoverage(AALine *lines, int32_t eidx, int32_t y, int32_t x
 /*
  * This Anti-Aliasing mechanism is originated from Hermet Park's idea.
  * To understand this AA logic, you can refer this page:
- * www.hermet.pe.kr/122 (hermetpark@gmail.com)
+ * https://uigraphics.tistory.com/1
 */
 static void _calcAAEdge(AASpans *aaSpans, int32_t eidx)
 {
@@ -1108,7 +1110,7 @@ static bool _rasterTexmapPolygon(SwSurface* surface, const SwImage* image, const
 
     float ys = FLT_MAX, ye = -1.0f;
     for (int i = 0; i < 4; i++) {
-        if (transform) mathMultiply(&vertices[i].pt, transform);
+        if (transform) vertices[i].pt *= *transform;
         if (vertices[i].pt.y < ys) ys = vertices[i].pt.y;
         if (vertices[i].pt.y > ye) ye = vertices[i].pt.y;
     }
@@ -1169,9 +1171,9 @@ static bool _rasterTexmapPolygonMesh(SwSurface* surface, const SwImage* image, c
     float ys = FLT_MAX, ye = -1.0f;
     for (uint32_t i = 0; i < mesh->triangleCnt; i++) {
         transformedTris[i] = mesh->triangles[i];
-        mathMultiply(&transformedTris[i].vertex[0].pt, transform);
-        mathMultiply(&transformedTris[i].vertex[1].pt, transform);
-        mathMultiply(&transformedTris[i].vertex[2].pt, transform);
+        transformedTris[i].vertex[0].pt *= *transform;
+        transformedTris[i].vertex[1].pt *= *transform;
+        transformedTris[i].vertex[2].pt *= *transform;
 
         if (transformedTris[i].vertex[0].pt.y < ys) ys = transformedTris[i].vertex[0].pt.y;
         else if (transformedTris[i].vertex[0].pt.y > ye) ye = transformedTris[i].vertex[0].pt.y;

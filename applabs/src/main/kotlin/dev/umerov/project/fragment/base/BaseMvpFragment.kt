@@ -1,6 +1,5 @@
 package dev.umerov.project.fragment.base
 
-import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
@@ -19,6 +18,7 @@ import dev.umerov.project.fragment.base.core.IErrorView
 import dev.umerov.project.fragment.base.core.IMvpView
 import dev.umerov.project.fragment.base.core.IToastView
 import dev.umerov.project.fragment.base.core.IToolbarView
+import dev.umerov.project.toColor
 import dev.umerov.project.util.ErrorLocalizer.localizeThrowable
 import dev.umerov.project.util.ViewUtils
 import dev.umerov.project.util.toast.AbsCustomToast
@@ -44,7 +44,7 @@ abstract class BaseMvpFragment<P : AbsPresenter<V>, V : IMvpView> : AbsMvpFragme
             CustomSnackbars.createCustomSnackbars(view)?.let {
                 val snack = it.setDurationSnack(BaseTransientBottomBar.LENGTH_LONG).coloredSnack(
                     localizeThrowable(provideApplicationContext(), throwable),
-                    Color.parseColor("#eeff0000")
+                    "#eeff0000".toColor()
                 )
                 if (throwable !is SocketTimeoutException && throwable !is UnknownHostException) {
                     snack.setAction(R.string.more_info) {

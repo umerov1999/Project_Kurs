@@ -62,7 +62,8 @@ class MainPresenter : RxSupportPresenter<IMainView>() {
                     .setMainText(R.string.lesson_9),
 
                 MainButton(PlaceFactory.getShoppingListPlace()).setText(R.string.shopping_list)
-                    .setMainText(R.string.final_work)
+                    .setMainText(R.string.final_work),
+                MainButton(PlaceFactory.getFinancePlace()).setText(R.string.finance)
             )
         )
     }

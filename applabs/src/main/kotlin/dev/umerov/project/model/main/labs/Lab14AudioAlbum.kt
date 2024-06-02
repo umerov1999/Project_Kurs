@@ -1,11 +1,11 @@
 package dev.umerov.project.model.main.labs
 
-import android.graphics.Color
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.annotation.ColorInt
 import dev.umerov.project.getBoolean
 import dev.umerov.project.putBoolean
+import dev.umerov.project.toColor
 import dev.umerov.project.util.StepArrayList
 
 class Lab14AudioAlbum : Parcelable {
@@ -21,7 +21,7 @@ class Lab14AudioAlbum : Parcelable {
         private set
 
     @ColorInt
-    var color: Int = Color.parseColor("#2D566B")
+    var color: Int = "#2D566B".toColor()
         private set
     var tempIsAnimation = false
     var tempIsEditMode = false
@@ -48,7 +48,7 @@ class Lab14AudioAlbum : Parcelable {
     }
 
     fun fetchColor(): Lab14AudioAlbum {
-        color = colors.getNext() ?: Color.parseColor("#2D566B")
+        color = colors.getNext() ?: "#2D566B".toColor()
         return this
     }
 
@@ -89,11 +89,11 @@ class Lab14AudioAlbum : Parcelable {
     companion object {
         private val colors = StepArrayList(
             arrayListOf(
-                Color.parseColor("#2D566B"),
-                Color.parseColor("#227585"),
-                Color.parseColor("#861E6A"),
-                Color.parseColor("#AA1656")
-            )
+                "#2D566B".toColor(),
+                "#227585".toColor(),
+                "#861E6A".toColor(),
+                "#AA1656".toColor()
+            ), StepArrayList.LAB14_AUDIO_ALBUM
         )
 
         @JvmField

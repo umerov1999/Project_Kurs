@@ -270,6 +270,9 @@
     <string name="genre_param">Genre: %1$s</string>
     <string name="artist_param">Artist: %1$s</string>
     <string name="year_param">Year: %1$d</string>
+    <string name="created_param">Created: %1$s</string>
+    <string name="coin_param">Balance: %1$s₽</string>
+    <string name="coin_param_operation">%1$s₽</string>
     <string name="phone_param">Phone: %1$s</string>
     <string name="mail_param">E-Mail: %1$s</string>
     <string name="file_manager">File manager</string>
@@ -298,6 +301,11 @@
     <string name="game_over">GAME OVER!</string>
     <string name="snake_refresh_ms">Snake refresh (ms)</string>
     <string name="enable_accelerometer">Enable Accelerometer</string>
+    <string name="coin">Coin</string>
+    <string name="is_incoming">Is incoming</string>
+    <string name="full_balance">Full balance: %1$s</string>
+    <string name="wallets_balance">Wallets balance: %1$s</string>
+    <string name="credit_balance">Credit cards balance: %1$s</string>
 
     <string name="lesson_1">Lesson 1</string>
     <string name="lesson_2">Lesson 2</string>
@@ -335,4 +343,9 @@
     <string name="snake">Snake</string>
 
     <string name="shopping_list">Shopping list</string>
+
+    <string name="finance">Finance</string>
+    <string name="finance_credit_cards">Credit Cards</string>
+    <string name="finance_wallets">Wallets</string>
+    <string name="finance_operations">Operations</string>
 </resources>

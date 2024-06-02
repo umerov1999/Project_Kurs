@@ -1,11 +1,11 @@
 package dev.umerov.project.model.main.labs
 
-import android.graphics.Color
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.annotation.ColorInt
 import dev.umerov.project.getBoolean
 import dev.umerov.project.putBoolean
+import dev.umerov.project.toColor
 import dev.umerov.project.util.StepArrayList
 import kotlinx.serialization.Serializable
 import java.util.Calendar
@@ -22,7 +22,7 @@ class ShoppingList : Parcelable {
         private set
 
     @ColorInt
-    var color: Int = Color.parseColor("#2D566B")
+    var color: Int = "#2D566B".toColor()
         private set
 
     var db_plannedPurchase: Int = 0
@@ -63,7 +63,7 @@ class ShoppingList : Parcelable {
     }
 
     fun fetchColor(): ShoppingList {
-        color = colors.getNext() ?: Color.parseColor("#2D566B")
+        color = colors.getNext() ?: "#2D566B".toColor()
         return this
     }
 
@@ -106,11 +106,11 @@ class ShoppingList : Parcelable {
     companion object {
         private val colors = StepArrayList(
             arrayListOf(
-                Color.parseColor("#2D566B"),
-                Color.parseColor("#227585"),
-                Color.parseColor("#861E6A"),
-                Color.parseColor("#AA1656")
-            )
+                "#2D566B".toColor(),
+                "#227585".toColor(),
+                "#861E6A".toColor(),
+                "#AA1656".toColor()
+            ), StepArrayList.SHOPPING_LIST
         )
 
         @JvmField

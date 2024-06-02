@@ -175,6 +175,9 @@
     <string name="genre_param">Жанр: %1$s</string>
     <string name="artist_param">Исполнитель: %1$s</string>
     <string name="year_param">Год: %1$d</string>
+    <string name="created_param">Создан: %1$s</string>
+    <string name="coin_param">Баланс: %1$s₽</string>
+    <string name="coin_param_operation">%1$s₽</string>
     <string name="phone_param">Телефон: %1$s</string>
     <string name="mail_param">E-Mail: %1$s</string>
     <string name="file_manager">Файловый менеджер</string>
@@ -203,6 +206,11 @@
     <string name="game_over">GAME OVER!</string>
     <string name="snake_refresh_ms">Обновление змейки (мс)</string>
     <string name="enable_accelerometer">Включить Акселерометр</string>
+    <string name="coin">Деньги</string>
+    <string name="is_incoming">Это доход</string>
+    <string name="full_balance">Суммарный баланс: %1$s</string>
+    <string name="wallets_balance">Баланс на кошельках: %1$s</string>
+    <string name="credit_balance">Баланс на кредитных картах: %1$s</string>
 
     <string name="lesson_1">Задание 1</string>
     <string name="lesson_2">Задание 2</string>
@@ -240,4 +248,9 @@
     <string name="snake">Змейка</string>
 
     <string name="shopping_list">Список покупок</string>
+
+    <string name="finance">Финансы</string>
+    <string name="finance_credit_cards">Кредитные карты</string>
+    <string name="finance_wallets">Кошельки</string>
+    <string name="finance_operations">Финансовые операции</string>
 </resources>

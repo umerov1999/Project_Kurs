@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.provider.BaseColumns
 import dev.umerov.project.Constants
 import dev.umerov.project.db.column.FilesColumns
+import dev.umerov.project.db.column.FinanceOperationsColumns
+import dev.umerov.project.db.column.FinanceWalletsColumns
 import dev.umerov.project.db.column.Lab11FilmsColumns
 import dev.umerov.project.db.column.Lab11GenresColumns
 import dev.umerov.project.db.column.Lab14PlaylistColumns
@@ -24,6 +26,34 @@ class ProjectDBHelper(context: Context) :
 
         createShoppingListTable(db)
         createShoppingProductTable(db)
+
+        createWalletListTable(db)
+        createFinanceOperationsListTable(db)
+    }
+
+    private fun createWalletListTable(db: SQLiteDatabase) {
+        val sql = "CREATE TABLE IF NOT EXISTS [" + FinanceWalletsColumns.TABLENAME + "] (\n" +
+                " [" + BaseColumns._ID + "] INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                " [" + FinanceWalletsColumns.TITLE + "] TEXT, " +
+                " [" + FinanceWalletsColumns.CREATED_DATE + "] INTEGER, " +
+                " [" + FinanceWalletsColumns.COLOR + "] INTEGER, " +
+                " [" + FinanceWalletsColumns.IS_CREDIT_CARD + "] BOOLEAN, " +
+                " CONSTRAINT [] UNIQUE ([" + BaseColumns._ID + "]) ON CONFLICT REPLACE);"
+        db.execSQL(sql)
+    }
+
+    private fun createFinanceOperationsListTable(db: SQLiteDatabase) {
+        val sql = "CREATE TABLE IF NOT EXISTS [" + FinanceOperationsColumns.TABLENAME + "] (\n" +
+                " [" + BaseColumns._ID + "] INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                " [" + FinanceOperationsColumns.OWNER_ID + "] INTEGER, " +
+                " [" + FinanceOperationsColumns.TITLE + "] TEXT, " +
+                " [" + FinanceOperationsColumns.DESCRIPTION + "] TEXT, " +
+                " [" + FinanceOperationsColumns.CREATED_DATE + "] INTEGER, " +
+                " [" + FinanceOperationsColumns.COLOR + "] INTEGER, " +
+                " [" + FinanceOperationsColumns.COINS + "] REAL, " +
+                " [" + FinanceOperationsColumns.IS_INCOME + "] BOOLEAN, " +
+                " CONSTRAINT [] UNIQUE ([" + BaseColumns._ID + "], [" + FinanceOperationsColumns.OWNER_ID + "]) ON CONFLICT REPLACE);"
+        db.execSQL(sql)
     }
 
     private fun createShoppingListTable(db: SQLiteDatabase) {
@@ -116,6 +146,8 @@ class ProjectDBHelper(context: Context) :
 
         db.execSQL("DROP TABLE IF EXISTS " + ShoppingListColumns.TABLENAME)
         db.execSQL("DROP TABLE IF EXISTS " + ShoppingProductColumns.TABLENAME)
+        db.execSQL("DROP TABLE IF EXISTS " + FinanceWalletsColumns.TABLENAME)
+        db.execSQL("DROP TABLE IF EXISTS " + FinanceOperationsColumns.TABLENAME)
         onCreate(db)
     }
 
