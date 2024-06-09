@@ -3,14 +3,12 @@ package dev.umerov.project.fragment.main.lab14
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
@@ -72,7 +70,7 @@ class Lab14Fragment : BaseMvpFragment<Lab14Presenter, ILab14View>(),
 
         parentFragmentManager.setFragmentResultListener(
             ENTRY_PLAYLIST_RESULT, this
-        ) { _: String?, result: Bundle ->
+        ) { _, result ->
             result.getParcelableCompat<Lab14AudioAlbum>(Extra.DATA)
                 ?.let { presenter?.fireStore(it) }
         }
@@ -196,7 +194,7 @@ class Lab14Fragment : BaseMvpFragment<Lab14Presenter, ILab14View>(),
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     obj.setTitle(mTitle.text.toString())
                     try {
                         obj.setYear(mYear.text.toString().toInt())
@@ -237,7 +235,7 @@ class Lab14Fragment : BaseMvpFragment<Lab14Presenter, ILab14View>(),
 
     private val selectPhoto = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
+    ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             val dest = File(
                 parentDir(), DATE_FORMAT.format(

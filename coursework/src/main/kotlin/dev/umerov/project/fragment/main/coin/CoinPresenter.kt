@@ -38,7 +38,7 @@ class CoinPresenter(@CoinOperationType private val operationType: Int) :
                 onActualDataReceived(
                     it
                 )
-            }) { t: Throwable -> onActualDataGetError(t) })
+            }) { t -> onActualDataGetError(t) })
     }
 
     private fun onActualDataGetError(t: Throwable) {

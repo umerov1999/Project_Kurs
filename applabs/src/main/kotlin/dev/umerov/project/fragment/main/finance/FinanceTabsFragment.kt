@@ -8,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
-import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import dev.umerov.project.R
 import dev.umerov.project.activity.ActivityFeatures
@@ -79,7 +78,7 @@ class FinanceTabsFragment : BaseFragment() {
         TabLayoutMediator(
             view.findViewById(R.id.tablayout),
             viewPager
-        ) { tab: TabLayout.Tab, position: Int -> tab.text = tabs[position].tabTitle }.attach()
+        ) { tab, position -> tab.text = tabs[position].tabTitle }.attach()
     }
 
     interface ITab {

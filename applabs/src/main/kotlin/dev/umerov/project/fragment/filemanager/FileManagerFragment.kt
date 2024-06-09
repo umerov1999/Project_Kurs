@@ -4,7 +4,6 @@ import android.animation.Animator
 import android.animation.ObjectAnimator
 import android.app.Activity.RESULT_OK
 import android.app.Dialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -14,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
@@ -234,7 +232,7 @@ class FileManagerFragment : BaseMvpFragment<FileManagerPresenter, IFileManagerVi
 
     private val requestEnterPin = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
+    ) { result ->
         if (result.resultCode == RESULT_OK) {
             result.data?.getParcelableExtraCompat<FileItem>(Extra.PATH)
                 ?.let { presenter?.fireDelete(it) }
@@ -250,7 +248,7 @@ class FileManagerFragment : BaseMvpFragment<FileManagerPresenter, IFileManagerVi
     override fun onDelete(item: FileItem) {
         MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.attention)
             .setMessage(requireActivity().getString(R.string.do_remove, item.file_name))
-            .setPositiveButton(R.string.button_yes) { _: DialogInterface?, _: Int ->
+            .setPositiveButton(R.string.button_yes) { _, _ ->
                 if (Settings.get().security().isUsePinForEntrance && Settings.get().security()
                         .hasPinHash
                 ) {
@@ -372,7 +370,7 @@ class FileManagerFragment : BaseMvpFragment<FileManagerPresenter, IFileManagerVi
 
         parentFragmentManager.setFragmentResultListener(
             ENTRY_NAME_RESULT, this
-        ) { _: String?, result: Bundle ->
+        ) { _, result ->
             result.getParcelableCompat<FileItem>(Extra.DATA)?.let { presenter?.fireStore(it) }
         }
     }
@@ -399,7 +397,7 @@ class FileManagerFragment : BaseMvpFragment<FileManagerPresenter, IFileManagerVi
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     obj.setTmpNewName(mTitle.text.toString())
                     val res = Bundle()
                     res.putParcelable(Extra.DATA, obj)

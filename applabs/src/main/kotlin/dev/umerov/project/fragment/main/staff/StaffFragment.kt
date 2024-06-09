@@ -3,7 +3,6 @@ package dev.umerov.project.fragment.main.staff
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
-import android.content.DialogInterface
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -68,7 +67,7 @@ class StaffFragment : BaseMvpFragment<StaffPresenter, IStaffView>(),
 
         parentFragmentManager.setFragmentResultListener(
             ENTRY_CONTACT_RESULT, this
-        ) { _: String?, result: Bundle ->
+        ) { _, result ->
             result.getParcelableCompat<Human>(Extra.DATA)?.let { presenter?.fireStore(it) }
         }
     }
@@ -102,7 +101,7 @@ class StaffFragment : BaseMvpFragment<StaffPresenter, IStaffView>(),
             presenter?.fireAdd()
         }
 
-        ItemTouchHelper(MessagesReplyItemCallback { o: Int ->
+        ItemTouchHelper(MessagesReplyItemCallback { o ->
             showMenu(o)
         }).attachToRecyclerView(mRecyclerView)
         return root
@@ -136,7 +135,7 @@ class StaffFragment : BaseMvpFragment<StaffPresenter, IStaffView>(),
                     1 -> {
                         MaterialAlertDialogBuilder(requireActivity()).setTitle(R.string.attention)
                             .setMessage(requireActivity().getString(R.string.do_remove, ""))
-                            .setPositiveButton(R.string.button_yes) { _: DialogInterface?, _: Int ->
+                            .setPositiveButton(R.string.button_yes) { _, _ ->
                                 presenter?.fireDelete(pos)
                             }
                             .setNegativeButton(R.string.button_cancel, null)
@@ -260,7 +259,7 @@ class StaffFragment : BaseMvpFragment<StaffPresenter, IStaffView>(),
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     obj.setFirstName(mFirstname.text.toString())
                     obj.setLastName(mLastname.text.toString())
                     obj.setGender(mGender.selectedItemPosition == 0)

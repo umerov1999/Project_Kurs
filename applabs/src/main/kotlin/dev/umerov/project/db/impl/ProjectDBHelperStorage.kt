@@ -22,7 +22,6 @@ import dev.umerov.project.model.main.labs.Lab11Film
 import dev.umerov.project.model.main.labs.Lab11Genre
 import dev.umerov.project.model.main.labs.Lab14AudioAlbum
 import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.CompletableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
@@ -58,7 +57,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
         val queryClean = query.trim { it <= ' ' }
         return if (queryClean.isEmpty()) {
             Completable.complete()
-        } else Completable.create { emitter: CompletableEmitter ->
+        } else Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -120,7 +119,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun insertFiles(parent: String, files: List<FileItem>): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -291,7 +290,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun updateGenre(genre: Lab11Genre): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -324,7 +323,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun deleteGenre(id: Long): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -348,7 +347,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun updateFilm(film: Lab11Film): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -387,7 +386,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun deleteFilm(id: Long): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -411,7 +410,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun updatePlaylist(playlist: Lab14AudioAlbum): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -452,7 +451,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun deletePlaylist(id: Long): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -476,7 +475,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun drop(): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             helper.purge(helper.writableDatabase)
             emitter.onComplete()
         }

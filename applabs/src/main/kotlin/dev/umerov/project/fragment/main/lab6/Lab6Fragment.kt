@@ -1,5 +1,6 @@
 package dev.umerov.project.fragment.main.lab6
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -58,6 +59,7 @@ class Lab6Fragment : BaseMvpFragment<Lab6Presenter, ILab6View>(),
 
     override fun getPresenterFactory(saveInstanceState: Bundle?) = Lab6Presenter()
 
+    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

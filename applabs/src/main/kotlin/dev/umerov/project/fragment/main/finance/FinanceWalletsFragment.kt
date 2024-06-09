@@ -2,7 +2,6 @@ package dev.umerov.project.fragment.main.finance
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -54,7 +53,7 @@ class FinanceWalletsFragment : BaseMvpFragment<FinanceWalletsPresenter, IFinance
         parentFragmentManager.setFragmentResultListener(
             if (requireArguments().getBoolean(Extra.IS_CREDIT_CARD)) ENTRY_CREDIT_CARD_RESULT else ENTRY_WALLET_RESULT,
             this
-        ) { _: String?, result: Bundle ->
+        ) { _, result ->
             result.getParcelableCompat<FinanceWallet>(Extra.DATA)
                 ?.let { presenter?.fireStore(it) }
         }
@@ -97,7 +96,7 @@ class FinanceWalletsFragment : BaseMvpFragment<FinanceWalletsPresenter, IFinance
         root.findViewById<FloatingActionButton>(R.id.add).setOnClickListener {
             presenter?.fireAdd()
         }
-        ItemTouchHelper(MessagesReplyItemCallback { o: Int ->
+        ItemTouchHelper(MessagesReplyItemCallback { o ->
             showMenu(o)
         }).attachToRecyclerView(mRecyclerView)
         return root
@@ -158,7 +157,7 @@ class FinanceWalletsFragment : BaseMvpFragment<FinanceWalletsPresenter, IFinance
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     obj.setTitle(mTitle.text.toString())
                     val res = Bundle()
                     res.putParcelable(Extra.DATA, obj)

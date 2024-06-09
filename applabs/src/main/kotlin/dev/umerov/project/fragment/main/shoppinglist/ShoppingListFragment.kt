@@ -2,7 +2,6 @@ package dev.umerov.project.fragment.main.shoppinglist
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -60,7 +59,7 @@ class ShoppingListFragment : BaseMvpFragment<ShoppingListPresenter, IShoppingLis
 
         parentFragmentManager.setFragmentResultListener(
             ENTRY_SHOPPING_LIST_RESULT, this
-        ) { _: String?, result: Bundle ->
+        ) { _, result ->
             result.getParcelableCompat<ShoppingList>(Extra.DATA)
                 ?.let { presenter?.fireStore(it) }
         }
@@ -104,7 +103,7 @@ class ShoppingListFragment : BaseMvpFragment<ShoppingListPresenter, IShoppingLis
             presenter?.loadDb()
         }
         ViewUtils.setupSwipeRefreshLayoutWithCurrentTheme(requireActivity(), mSwipeRefreshLayout)
-        ItemTouchHelper(MessagesReplyItemCallback { o: Int ->
+        ItemTouchHelper(MessagesReplyItemCallback { o ->
             presenter?.fireExpand(o)
         }).attachToRecyclerView(mRecyclerView)
         return root
@@ -188,7 +187,7 @@ class ShoppingListFragment : BaseMvpFragment<ShoppingListPresenter, IShoppingLis
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     obj.setTitle(mTitle.text.toString())
                     obj.setDescription(mDescription.text.toString())
                     val res = Bundle()

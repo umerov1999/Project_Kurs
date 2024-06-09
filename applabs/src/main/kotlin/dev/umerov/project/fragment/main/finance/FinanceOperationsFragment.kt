@@ -2,7 +2,6 @@ package dev.umerov.project.fragment.main.finance
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -62,7 +61,7 @@ class FinanceOperationsFragment :
 
         parentFragmentManager.setFragmentResultListener(
             ENTRY_OPERATION_RESULT, this
-        ) { _: String?, result: Bundle ->
+        ) { _, result ->
             result.getParcelableCompat<FinanceOperation>(Extra.DATA)
                 ?.let { presenter?.fireStore(it) }
         }
@@ -172,7 +171,7 @@ class FinanceOperationsFragment :
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     try {
                         obj.setTitle(mTitle.text.toString())
                         obj.setDescription(mDescription.text.toString())

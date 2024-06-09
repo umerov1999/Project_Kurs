@@ -3,14 +3,12 @@ package dev.umerov.project.fragment.main.lab11
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
@@ -72,7 +70,7 @@ class Lab11FilmsFragment : BaseMvpFragment<Lab11FilmsPresenter, ILab11FilmsView>
 
         parentFragmentManager.setFragmentResultListener(
             ENTRY_FILM_RESULT, this
-        ) { _: String?, result: Bundle ->
+        ) { _, result ->
             result.getParcelableCompat<Lab11Film>(Extra.DATA)?.let { presenter?.fireStore(it) }
         }
     }
@@ -194,7 +192,7 @@ class Lab11FilmsFragment : BaseMvpFragment<Lab11FilmsPresenter, ILab11FilmsView>
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     obj.setTitle(mTitle.text.toString())
                     try {
                         obj.setYear(mYear.text.toString().toInt())
@@ -235,7 +233,7 @@ class Lab11FilmsFragment : BaseMvpFragment<Lab11FilmsPresenter, ILab11FilmsView>
 
     private val selectPhoto = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
+    ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             val dest = File(
                 parentDir(), DATE_FORMAT.format(

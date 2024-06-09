@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
@@ -50,7 +49,7 @@ class Lab10Fragment : BaseMvpFragment<Lab10Presenter, ILab10View>(),
 
     private val selectPhoto = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
+    ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             try {
                 photo?.let {

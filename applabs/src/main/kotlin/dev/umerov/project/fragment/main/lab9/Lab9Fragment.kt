@@ -1,7 +1,6 @@
 package dev.umerov.project.fragment.main.lab9
 
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -55,7 +54,7 @@ class Lab9Fragment : BaseMvpFragment<Lab9Presenter, ILab9View>(),
 
         parentFragmentManager.setFragmentResultListener(
             ENTRY_CONTACT_RESULT, this
-        ) { _: String?, result: Bundle ->
+        ) { _, result ->
             result.getParcelableCompat<Lab9Contact>(Extra.DATA)?.let { presenter?.fireStore(it) }
         }
     }
@@ -89,7 +88,7 @@ class Lab9Fragment : BaseMvpFragment<Lab9Presenter, ILab9View>(),
             presenter?.fireAdd()
         }
 
-        ItemTouchHelper(MessagesReplyItemCallback { o: Int ->
+        ItemTouchHelper(MessagesReplyItemCallback { o ->
             showMenu(o)
         }).attachToRecyclerView(mRecyclerView)
         return root
@@ -167,7 +166,7 @@ class Lab9Fragment : BaseMvpFragment<Lab9Presenter, ILab9View>(),
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     obj.contact = mPhone.text.toString()
                     obj.email = mMail.text.toString()
                     val res = Bundle()

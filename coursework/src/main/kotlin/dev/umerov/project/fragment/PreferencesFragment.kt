@@ -2,7 +2,6 @@ package dev.umerov.project.fragment
 
 import android.app.Activity
 import android.app.Dialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -13,7 +12,6 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.SeekBar
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -104,7 +102,7 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
     @Suppress("DEPRECATION")
     private val exportSettings = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
+    ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             try {
                 val file = File(
@@ -153,7 +151,7 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
 
     private val importSettings = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
+    ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             try {
                 val file =
@@ -491,7 +489,7 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
 
     private val requestPin = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
+    ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             PlaceFactory.securitySettingsPlace.tryOpenWith(requireActivity())
         }
@@ -732,7 +730,7 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setNeutralButton(R.string.set_default) { _: DialogInterface?, _: Int ->
+                .setNeutralButton(R.string.set_default) { _, _ ->
                     Settings.get()
                         .main().setSlidrSettings(SlidrSettings().set_default())
                     parentFragmentManager.setFragmentResult(
@@ -741,7 +739,7 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
                     )
                     dismiss()
                 }
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     val st = SlidrSettings()
                     st.horizontal_sensitive = horizontalSensitive.progress.toFloat() / 100
                     st.vertical_sensitive = verticalSensitive.progress.toFloat() / 100

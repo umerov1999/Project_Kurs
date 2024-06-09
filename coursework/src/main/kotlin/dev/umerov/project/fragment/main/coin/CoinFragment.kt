@@ -1,7 +1,6 @@
 package dev.umerov.project.fragment.main.coin
 
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -68,7 +67,7 @@ class CoinFragment :
         mCoinAdapter?.setClickListener(this)
         recyclerView.adapter = mCoinAdapter
 
-        ItemTouchHelper(MessagesReplyItemCallback { o: Int ->
+        ItemTouchHelper(MessagesReplyItemCallback { o ->
             val menus = ModalBottomSheetDialogFragment.Builder()
             menus.add(
                 OptionRequest(
@@ -104,7 +103,7 @@ class CoinFragment :
 
         parentFragmentManager.setFragmentResultListener(
             Extra.DATA_RESULT, this
-        ) { _: String?, result: Bundle ->
+        ) { _, result ->
             result.getParcelableCompat<CoinOperation>(Extra.DATA)?.let { presenter?.fireStore(it) }
         }
     }
@@ -240,7 +239,7 @@ class CoinFragment :
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     try {
                         obj.title = mTitle.text.toString()
                         obj.comment = mComment.text.toString()

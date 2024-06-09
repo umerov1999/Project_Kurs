@@ -19,7 +19,6 @@ import dev.umerov.project.model.db.RegisterType
 import dev.umerov.project.model.exceptions.DBException
 import dev.umerov.project.model.exceptions.DBExceptionType
 import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.CompletableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
@@ -191,7 +190,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
         if (operation.dbId != -1L) {
             return Completable.error(DBException(DBExceptionType.ADD_OPERATION_SUPPORT_ONLY_NEW))
         }
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -202,7 +201,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
             try {
                 val register = getRegister(db, RegisterType.BALANCE)
                 if (operation.type == CoinOperationType.TAKE && register.coinBalance - operation.coin < 0) {
-                    emitter.onError(DBException(DBExceptionType.BALANCE_IS_LOW))
+                    emitter.tryOnError(DBException(DBExceptionType.BALANCE_IS_LOW))
                     return@create
                 }
                 register.operationsCount++
@@ -227,7 +226,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun updateOperation(operation: CoinOperation): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -256,7 +255,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                 }
 
                 if (register.coinBalance < 0) {
-                    emitter.onError(DBException(DBExceptionType.BALANCE_IS_LOW))
+                    emitter.tryOnError(DBException(DBExceptionType.BALANCE_IS_LOW))
                     return@create
                 }
 
@@ -273,7 +272,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun removeOperation(dbId: Long): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -294,7 +293,7 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                 }
 
                 if (register.coinBalance < 0) {
-                    emitter.onError(DBException(DBExceptionType.BALANCE_IS_LOW))
+                    emitter.tryOnError(DBException(DBExceptionType.BALANCE_IS_LOW))
                     return@create
                 }
 

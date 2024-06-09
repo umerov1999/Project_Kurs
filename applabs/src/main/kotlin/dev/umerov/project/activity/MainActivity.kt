@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.os.Build
@@ -14,7 +13,6 @@ import android.view.MenuItem
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.ColorInt
 import androidx.annotation.IdRes
@@ -130,7 +128,7 @@ class MainActivity : AppCompatActivity(), OnSectionResumeCallback, AppStyleable,
 
     private val requestEnterPin = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
+    ) { result ->
         if (result.resultCode != RESULT_OK) {
             finish()
         } else {
@@ -205,7 +203,7 @@ class MainActivity : AppCompatActivity(), OnSectionResumeCallback, AppStyleable,
 
     private val requestQRScan = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
-    ) { result: ActivityResult ->
+    ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             val scanner = result.data?.extras?.getString(Extra.URL)
             if (scanner.nonNullNoEmpty()) {
@@ -213,7 +211,7 @@ class MainActivity : AppCompatActivity(), OnSectionResumeCallback, AppStyleable,
                     .setIcon(R.drawable.qr_code)
                     .setMessage(scanner)
                     .setTitle(getString(R.string.scan_qr))
-                    .setNeutralButton(R.string.button_copy) { _: DialogInterface?, _: Int ->
+                    .setNeutralButton(R.string.button_copy) { _, _ ->
                         val clipboard = getSystemService(
                             CLIPBOARD_SERVICE
                         ) as ClipboardManager?

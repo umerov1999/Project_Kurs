@@ -16,7 +16,6 @@ import dev.umerov.project.model.main.labs.FinanceBalance
 import dev.umerov.project.model.main.labs.FinanceOperation
 import dev.umerov.project.model.main.labs.FinanceWallet
 import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.CompletableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
@@ -59,7 +58,7 @@ class FinanceDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun updateWallet(wallet: FinanceWallet): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -98,7 +97,7 @@ class FinanceDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun deleteWallet(id: Long): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -156,7 +155,7 @@ class FinanceDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun updateOperation(operation: FinanceOperation): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -201,7 +200,7 @@ class FinanceDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun deleteOperation(id: Long): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {

@@ -33,7 +33,7 @@ class FileManagerPresenter(
     private var copied: FileItem? = null
 
     @Suppress("DEPRECATION")
-    private val filter: FilenameFilter = FilenameFilter { dir: File, filename: String ->
+    private val filter: FilenameFilter = FilenameFilter { dir, filename ->
         val sel = File(dir, filename)
         if (sel.absolutePath == File(
                 Environment.getExternalStorageDirectory(),

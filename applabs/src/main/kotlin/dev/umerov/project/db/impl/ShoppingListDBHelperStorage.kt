@@ -15,7 +15,6 @@ import dev.umerov.project.isNull
 import dev.umerov.project.model.main.labs.Product
 import dev.umerov.project.model.main.labs.ShoppingList
 import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.CompletableEmitter
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.core.SingleEmitter
 
@@ -108,7 +107,7 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun updateShoppingList(shoppingList: ShoppingList): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -147,9 +146,9 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun updateProduct(product: Product): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             if (product.db_owner_id < 0) {
-                emitter.onError(UnsupportedOperationException())
+                emitter.tryOnError(UnsupportedOperationException())
                 return@create
             }
             val db = helper.writableDatabase
@@ -194,7 +193,7 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun deleteProduct(id: Long): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {
@@ -218,7 +217,7 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
     }
 
     override fun deleteShoppingList(id: Long): Completable {
-        return Completable.create { emitter: CompletableEmitter ->
+        return Completable.create { emitter ->
             val db = helper.writableDatabase
             db.beginTransaction()
             if (emitter.isDisposed) {

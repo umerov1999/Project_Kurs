@@ -3,7 +3,6 @@ package dev.umerov.project.fragment.main.shoppingproducts
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -81,7 +80,7 @@ class ShoppingProductsFragment :
 
         parentFragmentManager.setFragmentResultListener(
             ENTRY_SHOPPING_PRODUCT_RESULT, this
-        ) { _: String?, result: Bundle ->
+        ) { _, result ->
             result.getParcelableCompat<Product>(Extra.DATA)
                 ?.let { presenter?.fireStore(it, false) }
         }
@@ -283,7 +282,7 @@ class ShoppingProductsFragment :
                 .setView(view)
                 .setCancelable(true)
                 .setNegativeButton(R.string.button_cancel, null)
-                .setPositiveButton(R.string.button_ok) { _: DialogInterface?, _: Int ->
+                .setPositiveButton(R.string.button_ok) { _, _ ->
                     obj.setName(mName.text.toString())
                     try {
                         obj.setCount(mCount.text.toString().toInt())
