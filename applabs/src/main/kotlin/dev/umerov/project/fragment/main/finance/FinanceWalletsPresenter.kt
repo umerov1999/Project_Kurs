@@ -2,8 +2,8 @@ package dev.umerov.project.fragment.main.finance
 
 import dev.umerov.project.Includes
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.model.main.labs.FinanceWallet
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
 
 class FinanceWalletsPresenter(private val isCreditCard: Boolean) :
     RxSupportPresenter<IFinanceWalletsView>() {
@@ -24,8 +24,8 @@ class FinanceWalletsPresenter(private val isCreditCard: Boolean) :
 
     fun fireStore(item: FinanceWallet) {
         val oldId = item.db_id
-        appendDisposable(
-            Includes.stores.financeStore().updateWallet(item).fromIOToMain().subscribe({
+        appendJob(
+            Includes.stores.financeStore().updateWallet(item).fromIOToMain({
                 if (oldId < 0) {
                     list.add(0, item)
                     view?.notifyDataAdded(0, 1)
@@ -54,14 +54,13 @@ class FinanceWalletsPresenter(private val isCreditCard: Boolean) :
         if (pos < 0 || pos > list.size - 1) {
             return
         }
-        appendDisposable(
-            Includes.stores.financeStore().deleteWallet(list[pos].db_id).fromIOToMain()
-                .subscribe({
-                    list.removeAt(pos)
-                    view?.notifyDataRemoved(pos, 1)
-                }, {
-                    view?.showThrowable(it)
-                })
+        appendJob(
+            Includes.stores.financeStore().deleteWallet(list[pos].db_id).fromIOToMain({
+                list.removeAt(pos)
+                view?.notifyDataRemoved(pos, 1)
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -101,14 +100,13 @@ class FinanceWalletsPresenter(private val isCreditCard: Boolean) :
         if (pos < 0 || pos > list.size - 1 || list[pos].tempIsAnimation || !list[pos].tempIsEditMode) {
             return
         }
-        appendDisposable(
-            Includes.stores.financeStore().deleteWallet(list[pos].db_id).fromIOToMain()
-                .subscribe({
-                    list.removeAt(pos)
-                    view?.notifyDataRemoved(pos, 1)
-                }, {
-                    view?.showThrowable(it)
-                })
+        appendJob(
+            Includes.stores.financeStore().deleteWallet(list[pos].db_id).fromIOToMain({
+                list.removeAt(pos)
+                view?.notifyDataRemoved(pos, 1)
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -125,11 +123,10 @@ class FinanceWalletsPresenter(private val isCreditCard: Boolean) :
     fun loadDb() {
         val tmpNeedReload = needReload
         needReload = -1L
-        appendDisposable(
+        appendJob(
             Includes.stores.financeStore()
                 .getWallets(isCreditCard, if (tmpNeedReload >= 0) tmpNeedReload else null)
-                .fromIOToMain()
-                .subscribe({
+                .fromIOToMain({
                     if (tmpNeedReload >= 0) {
                         if (it.isNotEmpty()) {
                             for (i in list.indices) {

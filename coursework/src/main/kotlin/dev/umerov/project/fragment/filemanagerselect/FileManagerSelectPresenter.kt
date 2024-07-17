@@ -4,10 +4,11 @@ import android.os.Environment
 import android.os.Parcelable
 import androidx.recyclerview.widget.LinearLayoutManager_SavedState
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.model.FileItemSelect
 import dev.umerov.project.util.Objects.safeEquals
-import io.reactivex.rxjava3.core.Single
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import java.io.File
 import java.io.FilenameFilter
 import java.util.Locale
@@ -22,7 +23,6 @@ class FileManagerSelectPresenter(
     private val directoryScrollPositions = HashMap<String, Parcelable>()
     private var q: String? = null
 
-    @Suppress("DEPRECATION")
     private val filter: FilenameFilter = FilenameFilter { dir, filename ->
         val sel = File(dir, filename)
         if (sel.absolutePath == File(
@@ -146,7 +146,7 @@ class FileManagerSelectPresenter(
         isLoading = true
         view?.resolveEmptyText(false)
         view?.resolveLoading(isLoading)
-        appendDisposable(rxLoadFileList().fromIOToMain().subscribe({
+        appendJob(rxLoadFileList().fromIOToMain({
             fileList.clear()
             fileList.addAll(it)
             isLoading = false
@@ -167,8 +167,8 @@ class FileManagerSelectPresenter(
         return file.list()?.size?.toLong() ?: -1
     }
 
-    private fun rxLoadFileList(): Single<ArrayList<FileItemSelect>> {
-        return Single.create {
+    private fun rxLoadFileList(): Flow<ArrayList<FileItemSelect>> {
+        return flow {
             val fileListTmp = ArrayList<FileItemSelect>()
             if (path.exists() && path.canRead()) {
                 val fList = path.list(filter)
@@ -203,7 +203,7 @@ class FileManagerSelectPresenter(
                     fileListTmp.addAll(flsList)
                 }
             }
-            it.onSuccess(fileListTmp)
+            emit(fileListTmp)
         }
     }
 

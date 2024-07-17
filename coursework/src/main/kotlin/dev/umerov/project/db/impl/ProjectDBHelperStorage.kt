@@ -18,9 +18,10 @@ import dev.umerov.project.model.db.Register
 import dev.umerov.project.model.db.RegisterType
 import dev.umerov.project.model.exceptions.DBException
 import dev.umerov.project.model.exceptions.DBExceptionType
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.core.SingleEmitter
+import dev.umerov.project.util.coroutines.CoroutinesUtils.isActive
+import dev.umerov.project.util.coroutines.CoroutinesUtils.toFlowThrowable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class ProjectDBHelperStorage internal constructor(context: Context) :
     IProjectDBHelperStorage {
@@ -186,23 +187,22 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
         db.delete(CoinOperationsColumns.TABLENAME, where, args)
     }
 
-    override fun addOperation(operation: CoinOperation): Completable {
+    override fun addOperation(operation: CoinOperation): Flow<Boolean> {
         if (operation.dbId != -1L) {
-            return Completable.error(DBException(DBExceptionType.ADD_OPERATION_SUPPORT_ONLY_NEW))
+            return toFlowThrowable(DBException(DBExceptionType.ADD_OPERATION_SUPPORT_ONLY_NEW))
         }
-        return Completable.create { emitter ->
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 val register = getRegister(db, RegisterType.BALANCE)
                 if (operation.type == CoinOperationType.TAKE && register.coinBalance - operation.coin < 0) {
-                    emitter.tryOnError(DBException(DBExceptionType.BALANCE_IS_LOW))
-                    return@create
+                    throw DBException(DBExceptionType.BALANCE_IS_LOW)
                 }
                 register.operationsCount++
                 if (operation.type == CoinOperationType.TAKE) {
@@ -215,24 +215,24 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
 
                 insertCoinOperation(db, operation)
                 insertRegister(db, RegisterType.BALANCE, register)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun updateOperation(operation: CoinOperation): Completable {
-        return Completable.create { emitter ->
+    override fun updateOperation(operation: CoinOperation): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 val register = getRegister(db, RegisterType.BALANCE)
@@ -255,30 +255,29 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                 }
 
                 if (register.coinBalance < 0) {
-                    emitter.tryOnError(DBException(DBExceptionType.BALANCE_IS_LOW))
-                    return@create
+                    throw DBException(DBExceptionType.BALANCE_IS_LOW)
                 }
 
                 updateCoinOperation(db, operation)
                 insertRegister(db, RegisterType.BALANCE, register)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun removeOperation(dbId: Long): Completable {
-        return Completable.create { emitter ->
+    override fun removeOperation(dbId: Long): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 val register = getRegister(db, RegisterType.BALANCE)
@@ -293,41 +292,40 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                 }
 
                 if (register.coinBalance < 0) {
-                    emitter.tryOnError(DBException(DBExceptionType.BALANCE_IS_LOW))
-                    return@create
+                    throw DBException(DBExceptionType.BALANCE_IS_LOW)
                 }
 
                 removeCoinOperation(db, oldOperation)
                 register.operationsCount--
                 insertRegister(db, RegisterType.BALANCE, register)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun fetchRegister(@RegisterType type: Int): Single<Register> {
-        return Single.create { emitter: SingleEmitter<Register> ->
+    override fun fetchRegister(@RegisterType type: Int): Flow<Register> {
+        return flow {
             val db = helper.readableDatabase
-            emitter.onSuccess(getRegister(db, type))
+            emit(getRegister(db, type))
         }
     }
 
-    override fun fetchCoinOperations(@CoinOperationType type: Int): Single<ArrayList<CoinOperation>> {
-        return Single.create { emitter: SingleEmitter<ArrayList<CoinOperation>> ->
+    override fun fetchCoinOperations(@CoinOperationType type: Int): Flow<ArrayList<CoinOperation>> {
+        return flow {
             val db = helper.readableDatabase
-            emitter.onSuccess(getCoinOperations(db, type))
+            emit(getCoinOperations(db, type))
         }
     }
 
-    override fun fetchCoinOperationsAllForBackup(): Single<ArrayList<CoinOperation>> {
-        return Single.create { emitter: SingleEmitter<ArrayList<CoinOperation>> ->
+    override fun fetchCoinOperationsAllForBackup(): Flow<ArrayList<CoinOperation>> {
+        return flow {
             val db = helper.readableDatabase
-            emitter.onSuccess(getCoinOperationsAllForBackup(db))
+            emit(getCoinOperationsAllForBackup(db))
         }
     }
 

@@ -18,14 +18,14 @@ import androidx.annotation.DrawableRes
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import dev.umerov.project.Includes.stores
 import dev.umerov.project.R
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.getParcelableCompat
 import dev.umerov.project.listener.TextWatcherAdapter
 import dev.umerov.project.settings.CurrentTheme
 import dev.umerov.project.trimmedNonNullNoEmpty
 import dev.umerov.project.util.Utils
 import dev.umerov.project.util.ViewUtils
-import io.reactivex.rxjava3.disposables.Disposable
+import dev.umerov.project.util.coroutines.CancelableJob
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
 
 class MySearchView : FrameLayout {
     private var mQuery: String? = null
@@ -35,7 +35,7 @@ class MySearchView : FrameLayout {
     private var mButtonClear: ImageView? = null
     private var mButtonAdditional: ImageView? = null
     private var mOnQueryChangeListener: OnQueryTextListener? = null
-    private var mQueryDisposable = Disposable.disposed()
+    private var mQueryDisposable = CancelableJob()
     private var listQueries = ArrayList<String?>()
     private var isFetchedListQueries = false
     private var searchId = 0
@@ -79,14 +79,13 @@ class MySearchView : FrameLayout {
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        mQueryDisposable.dispose()
+        mQueryDisposable.cancel()
     }
 
     private fun loadQueries() {
-        mQueryDisposable.dispose()
-        mQueryDisposable = stores.projectStore().getQueries(searchId)
-            .fromIOToMain()
-            .subscribe({ s ->
+        mQueryDisposable.cancel()
+        mQueryDisposable += stores.projectStore().getQueries(searchId)
+            .fromIOToMain({ s ->
                 isFetchedListQueries = true
                 listQueries.clear()
                 listQueries.addAll(s)
@@ -168,16 +167,14 @@ class MySearchView : FrameLayout {
     private fun onSubmitQuery() {
         val query: CharSequence? = mInput?.text
         if (query.trimmedNonNullNoEmpty()) {
-            mQueryDisposable.dispose()
-            mQueryDisposable =
-                stores.projectStore().insertQuery(searchId, query.toString())
-                    .fromIOToMain()
-                    .subscribe({
-                        if (!listQueries.contains(query.toString())) {
-                            listQueries.add(0, query.toString())
-                            updateQueriesAdapter()
-                        }
-                    }, { Log.e(TAG, it.localizedMessage.orEmpty()) })
+            mQueryDisposable.cancel()
+            mQueryDisposable += stores.projectStore().insertQuery(searchId, query.toString())
+                .fromIOToMain({
+                    if (!listQueries.contains(query.toString())) {
+                        listQueries.add(0, query.toString())
+                        updateQueriesAdapter()
+                    }
+                }, { Log.e(TAG, it.localizedMessage.orEmpty()) })
             if (mOnQueryChangeListener != null && mOnQueryChangeListener?.onQueryTextSubmit(query.toString()) == true) {
                 val imm =
                     context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?

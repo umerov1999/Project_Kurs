@@ -8,14 +8,13 @@ import dev.umerov.project.Extra
 import dev.umerov.project.Includes
 import dev.umerov.project.R
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.model.main.labs.Product
 import dev.umerov.project.model.main.labs.ProductUnit
 import dev.umerov.project.model.main.labs.ShoppingList
 import dev.umerov.project.util.NotificationHelper
 import dev.umerov.project.util.Utils
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
 import dev.umerov.project.util.serializeble.msgpack.MsgPack
-
 
 class ShoppingProductsPresenter(
     private val context: Context,
@@ -54,43 +53,42 @@ class ShoppingProductsPresenter(
 
     fun fireStore(product: Product, boughtToggle: Boolean) {
         val oldId = product.db_id
-        appendDisposable(
-            Includes.stores.shoppingStore().updateProduct(product).fromIOToMain()
-                .subscribe({
-                    if (oldId < 0) {
-                        if (product.isBought) {
-                            val tmpSize = list.size
-                            list.add(list.size, product)
-                            view?.notifyDataAdded(tmpSize, 1)
-                        } else {
-                            list.add(0, product)
-                            view?.notifyDataAdded(0, 1)
-                        }
+        appendJob(
+            Includes.stores.shoppingStore().updateProduct(product).fromIOToMain({
+                if (oldId < 0) {
+                    if (product.isBought) {
+                        val tmpSize = list.size
+                        list.add(list.size, product)
+                        view?.notifyDataAdded(tmpSize, 1)
                     } else {
-                        for (i in list.indices) {
-                            if (list[i].db_id == oldId && !boughtToggle) {
-                                list[i] = product
-                                view?.notifyItemChanged(i)
-                                break
-                            } else if (list[i].db_id == oldId) {
-                                if (list[i].isBought) {
-                                    val tmp = list.removeAt(i)
-                                    list.add(list.size, tmp)
-                                    view?.notifyItemMoved(i, (list.size - 1).coerceAtLeast(0))
-                                    view?.notifyItemChanged((list.size - 1).coerceAtLeast(0))
-                                } else {
-                                    val tmp = list.removeAt(i)
-                                    list.add(0, tmp)
-                                    view?.notifyItemMoved(i, 0)
-                                    view?.notifyItemChanged(0)
-                                }
-                                break
+                        list.add(0, product)
+                        view?.notifyDataAdded(0, 1)
+                    }
+                } else {
+                    for (i in list.indices) {
+                        if (list[i].db_id == oldId && !boughtToggle) {
+                            list[i] = product
+                            view?.notifyItemChanged(i)
+                            break
+                        } else if (list[i].db_id == oldId) {
+                            if (list[i].isBought) {
+                                val tmp = list.removeAt(i)
+                                list.add(list.size, tmp)
+                                view?.notifyItemMoved(i, (list.size - 1).coerceAtLeast(0))
+                                view?.notifyItemChanged((list.size - 1).coerceAtLeast(0))
+                            } else {
+                                val tmp = list.removeAt(i)
+                                list.add(0, tmp)
+                                view?.notifyItemMoved(i, 0)
+                                view?.notifyItemChanged(0)
                             }
+                            break
                         }
                     }
-                }, {
-                    view?.showThrowable(it)
-                })
+                }
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -102,14 +100,13 @@ class ShoppingProductsPresenter(
         if (pos < 0 || pos > list.size - 1) {
             return
         }
-        appendDisposable(
-            Includes.stores.shoppingStore().deleteProduct(list[pos].db_id).fromIOToMain()
-                .subscribe({
-                    list.removeAt(pos)
-                    view?.notifyDataRemoved(pos, 1)
-                }, {
-                    view?.showThrowable(it)
-                })
+        appendJob(
+            Includes.stores.shoppingStore().deleteProduct(list[pos].db_id).fromIOToMain({
+                list.removeAt(pos)
+                view?.notifyDataRemoved(pos, 1)
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -141,14 +138,13 @@ class ShoppingProductsPresenter(
         if (pos < 0 || pos > list.size - 1 || list[pos].tempIsAnimation || !list[pos].tempIsEditMode) {
             return
         }
-        appendDisposable(
-            Includes.stores.shoppingStore().deleteProduct(list[pos].db_id).fromIOToMain()
-                .subscribe({
-                    list.removeAt(pos)
-                    view?.notifyDataRemoved(pos, 1)
-                }, {
-                    view?.showThrowable(it)
-                })
+        appendJob(
+            Includes.stores.shoppingStore().deleteProduct(list[pos].db_id).fromIOToMain({
+                list.removeAt(pos)
+                view?.notifyDataRemoved(pos, 1)
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -174,10 +170,9 @@ class ShoppingProductsPresenter(
     }
 
     fun loadDb() {
-        appendDisposable(
+        appendJob(
             Includes.stores.shoppingStore()
-                .getProducts(shoppingList.db_id).fromIOToMain()
-                .subscribe({
+                .getProducts(shoppingList.db_id).fromIOToMain({
                     list.clear()
                     list.addAll(it)
                     view?.notifyDataSetChanged()

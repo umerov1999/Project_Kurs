@@ -7,13 +7,14 @@ import androidx.recyclerview.widget.LinearLayoutManager_SavedState
 import dev.umerov.project.Includes
 import dev.umerov.project.R
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.model.FileItem
 import dev.umerov.project.model.FileType
 import dev.umerov.project.settings.Settings
 import dev.umerov.project.util.Objects.safeEquals
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
+import dev.umerov.project.util.coroutines.CoroutinesUtils.syncSingle
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import okio.buffer
 import okio.sink
 import okio.source
@@ -32,7 +33,6 @@ class FileManagerPresenter(
     private val directoryScrollPositions = HashMap<String, Parcelable>()
     private var copied: FileItem? = null
 
-    @Suppress("DEPRECATION")
     private val filter: FilenameFilter = FilenameFilter { dir, filename ->
         val sel = File(dir, filename)
         if (sel.absolutePath == File(
@@ -84,22 +84,21 @@ class FileManagerPresenter(
     private fun fireCopy(from: File, toDir: File) {
         isLoading = true
         view?.resolveLoading(isLoading)
-        Completable.create {
+        flow {
             if (from.isDirectory) {
                 copyDir(from, toDir, true)
             } else {
                 copyFile(from, File(toDir, from.name))
             }
-            it.onComplete()
-        }.fromIOToMain()
-            .subscribe({
-                isLoading = false
-                view?.resolveLoading(isLoading)
-                view?.showMessage(R.string.success)
-                loadFiles(back = false, caches = false, fromCache = false)
-            }, {
-                view?.showThrowable(it)
-            })
+            emit(true)
+        }.fromIOToMain({
+            isLoading = false
+            view?.resolveLoading(isLoading)
+            view?.showMessage(R.string.success)
+            loadFiles(back = false, caches = false, fromCache = false)
+        }, {
+            view?.showThrowable(it)
+        })
     }
 
     fun fireSetCopied(copied: FileItem) {
@@ -188,14 +187,14 @@ class FileManagerPresenter(
                 isLoading = true
                 view?.resolveEmptyText(false)
                 view?.resolveLoading(isLoading)
-                appendDisposable(rxSearchFiles().fromIOToMain().subscribe({
+                appendJob(rxSearchFiles().fromIOToMain({
                     fileListSearch.clear()
                     fileListSearch.addAll(it)
                     isLoading = false
                     view?.resolveEmptyText(fileListSearch.isEmpty())
                     view?.resolveLoading(isLoading)
                     view?.displayData(fileListSearch)
-                    view?.updatePathString(q ?: return@subscribe)
+                    view?.updatePathString(q ?: return@fromIOToMain)
                 }, {
                     view?.showThrowable(it)
                     isLoading = false
@@ -278,31 +277,30 @@ class FileManagerPresenter(
         isLoading = true
         view?.resolveEmptyText(false)
         view?.resolveLoading(isLoading)
-        appendDisposable(
-            Includes.stores.projectStore().getFiles(path.absolutePath).fromIOToMain()
-                .subscribe({
-                    fileList.clear()
-                    fileList.addAll(it)
-                    view?.resolveEmptyText(fileList.isEmpty())
-                    view?.notifyAllChanged()
-                    directoryScrollPositions.remove(path.absolutePath)?.let { scroll ->
-                        view?.restoreScroll(scroll)
-                    } ?: view?.restoreScroll(LinearLayoutManager_SavedState())
-                    if (back && fileList.isEmpty() || !back) {
-                        loadFiles(
-                            back = false, caches = false, fromCache = true
-                        )
-                    } else {
-                        isLoading = false
-                        view?.resolveLoading(isLoading)
-                    }
-                }, {
-                    view?.restoreScroll(LinearLayoutManager_SavedState())
-                    view?.showThrowable(it)
+        appendJob(
+            Includes.stores.projectStore().getFiles(path.absolutePath).fromIOToMain({
+                fileList.clear()
+                fileList.addAll(it)
+                view?.resolveEmptyText(fileList.isEmpty())
+                view?.notifyAllChanged()
+                directoryScrollPositions.remove(path.absolutePath)?.let { scroll ->
+                    view?.restoreScroll(scroll)
+                } ?: view?.restoreScroll(LinearLayoutManager_SavedState())
+                if (back && fileList.isEmpty() || !back) {
                     loadFiles(
                         back = false, caches = false, fromCache = true
                     )
-                })
+                } else {
+                    isLoading = false
+                    view?.resolveLoading(isLoading)
+                }
+            }, {
+                view?.restoreScroll(LinearLayoutManager_SavedState())
+                view?.showThrowable(it)
+                loadFiles(
+                    back = false, caches = false, fromCache = true
+                )
+            })
         )
     }
 
@@ -319,7 +317,7 @@ class FileManagerPresenter(
             isLoading = true
             view?.resolveLoading(isLoading)
         }
-        appendDisposable(rxLoadFileList().fromIOToMain().subscribe({
+        appendJob(rxLoadFileList().fromIOToMain({
             fileList.clear()
             fileList.addAll(it)
             isLoading = false
@@ -333,8 +331,8 @@ class FileManagerPresenter(
         }))
     }
 
-    private fun rxSearchFiles(): Single<ArrayList<FileItem>> {
-        return Single.create {
+    private fun rxSearchFiles(): Flow<ArrayList<FileItem>> {
+        return flow {
             val fileListTmp = ArrayList<FileItem>()
             searchFile(fileListTmp, path)
             val dirsList = ArrayList<FileItem>()
@@ -347,7 +345,7 @@ class FileManagerPresenter(
             fileListTmp.clear()
             fileListTmp.addAll(dirsList)
             fileListTmp.addAll(flsList)
-            it.onSuccess(fileListTmp)
+            emit(fileListTmp)
         }
     }
 
@@ -392,8 +390,8 @@ class FileManagerPresenter(
         return file.list()?.size?.toLong() ?: -1
     }
 
-    private fun rxLoadFileList(): Single<ArrayList<FileItem>> {
-        return Single.create {
+    private fun rxLoadFileList(): Flow<ArrayList<FileItem>> {
+        return flow {
             val fileListTmp = ArrayList<FileItem>()
             if (path.exists() && path.canRead()) {
                 val fList = path.list(filter)
@@ -431,8 +429,8 @@ class FileManagerPresenter(
                 }
             }
             Includes.stores.projectStore().insertFiles(path.absolutePath, fileListTmp)
-                .blockingAwait()
-            it.onSuccess(fileListTmp)
+                .syncSingle()
+            emit(fileListTmp)
         }
     }
 
@@ -464,10 +462,10 @@ class FileManagerPresenter(
         }
     }
 
-    private fun fixDirTimeRx(dir: String): Completable {
-        return Completable.create {
+    private fun fixDirTimeRx(dir: String): Flow<Boolean> {
+        return flow {
             doFixDirTime(dir, true)
-            it.onComplete()
+            emit(true)
         }
     }
 
@@ -478,7 +476,7 @@ class FileManagerPresenter(
         }
         isLoading = true
         view?.resolveLoading(isLoading)
-        fixDirTimeRx(dir).fromIOToMain().subscribe({
+        fixDirTimeRx(dir).fromIOToMain({
             view?.showMessage(R.string.success)
             isLoading = false
             loadFiles(back = false, caches = false, fromCache = false)
@@ -563,30 +561,29 @@ class FileManagerPresenter(
         }
         isLoading = true
         view?.resolveLoading(isLoading)
-        Completable.create {
+        flow {
             if (item.type != FileType.folder) {
                 if (File(item.file_path).delete()) {
-                    it.onComplete()
+                    emit(true)
                 } else {
-                    it.tryOnError(Throwable("Can't Delete File"))
+                    throw Throwable("Can't Delete File")
                 }
             } else {
                 deleteRecursive(item.file_path)
                 if (File(item.file_path).delete()) {
-                    it.onComplete()
+                    emit(true)
                 } else {
-                    it.tryOnError(Throwable("Can't Delete Folder"))
+                    throw Throwable("Can't Delete Folder")
                 }
             }
-        }.fromIOToMain()
-            .subscribe({
-                isLoading = false
-                view?.resolveLoading(isLoading)
-                view?.showMessage(R.string.success)
-                loadFiles(back = false, caches = false, fromCache = false)
-            }, {
-                view?.showThrowable(it)
-            })
+        }.fromIOToMain({
+            isLoading = false
+            view?.resolveLoading(isLoading)
+            view?.showMessage(R.string.success)
+            loadFiles(back = false, caches = false, fromCache = false)
+        }, {
+            view?.showThrowable(it)
+        })
     }
 
     @FileType

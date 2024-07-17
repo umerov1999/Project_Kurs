@@ -4,15 +4,14 @@ import dev.umerov.project.model.db.CoinOperation
 import dev.umerov.project.model.db.CoinOperationType
 import dev.umerov.project.model.db.Register
 import dev.umerov.project.model.db.RegisterType
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.flow.Flow
 
 interface IProjectDBHelperStorage {
-    fun addOperation(operation: CoinOperation): Completable
-    fun updateOperation(operation: CoinOperation): Completable
-    fun removeOperation(dbId: Long): Completable
+    fun addOperation(operation: CoinOperation): Flow<Boolean>
+    fun updateOperation(operation: CoinOperation): Flow<Boolean>
+    fun removeOperation(dbId: Long): Flow<Boolean>
 
-    fun fetchRegister(@RegisterType type: Int): Single<Register>
-    fun fetchCoinOperations(@CoinOperationType type: Int): Single<ArrayList<CoinOperation>>
-    fun fetchCoinOperationsAllForBackup(): Single<ArrayList<CoinOperation>>
+    fun fetchRegister(@RegisterType type: Int): Flow<Register>
+    fun fetchCoinOperations(@CoinOperationType type: Int): Flow<ArrayList<CoinOperation>>
+    fun fetchCoinOperationsAllForBackup(): Flow<ArrayList<CoinOperation>>
 }

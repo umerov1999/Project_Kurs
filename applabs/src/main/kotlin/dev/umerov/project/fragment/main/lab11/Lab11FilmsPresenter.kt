@@ -2,9 +2,9 @@ package dev.umerov.project.fragment.main.lab11
 
 import dev.umerov.project.Includes
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.model.main.labs.Lab11Film
 import dev.umerov.project.model.main.labs.Lab11Genre
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
 
 class Lab11FilmsPresenter : RxSupportPresenter<ILab11FilmsView>() {
     private val list = ArrayList<Lab11Film>()
@@ -16,8 +16,8 @@ class Lab11FilmsPresenter : RxSupportPresenter<ILab11FilmsView>() {
 
     fun fireStore(film: Lab11Film) {
         val oldId = film.db_id
-        appendDisposable(
-            Includes.stores.projectStore().updateFilm(film).fromIOToMain().subscribe({
+        appendJob(
+            Includes.stores.projectStore().updateFilm(film).fromIOToMain({
                 if (oldId < 0) {
                     list.add(0, film)
                     view?.notifyDataAdded(0, 1)
@@ -44,8 +44,8 @@ class Lab11FilmsPresenter : RxSupportPresenter<ILab11FilmsView>() {
         if (pos < 0 || pos > list.size - 1) {
             return
         }
-        appendDisposable(
-            Includes.stores.projectStore().deleteFilm(list[pos].db_id).fromIOToMain().subscribe({
+        appendJob(
+            Includes.stores.projectStore().deleteFilm(list[pos].db_id).fromIOToMain({
                 list.removeAt(pos)
                 view?.notifyDataRemoved(pos, 1)
             }, {
@@ -82,8 +82,8 @@ class Lab11FilmsPresenter : RxSupportPresenter<ILab11FilmsView>() {
         if (pos < 0 || pos > list.size - 1 || list[pos].tempIsAnimation || !list[pos].tempIsEditMode) {
             return
         }
-        appendDisposable(
-            Includes.stores.projectStore().deleteFilm(list[pos].db_id).fromIOToMain().subscribe({
+        appendJob(
+            Includes.stores.projectStore().deleteFilm(list[pos].db_id).fromIOToMain({
                 list.removeAt(pos)
                 view?.notifyDataRemoved(pos, 1)
             }, {
@@ -117,13 +117,12 @@ class Lab11FilmsPresenter : RxSupportPresenter<ILab11FilmsView>() {
     }
 
     init {
-        appendDisposable(
-            Includes.stores.projectStore().getFilms().fromIOToMain()
-                .subscribe({
-                    list.clear()
-                    list.addAll(it)
-                    view?.notifyDataSetChanged()
-                }, { view?.showThrowable(it) })
+        appendJob(
+            Includes.stores.projectStore().getFilms().fromIOToMain({
+                list.clear()
+                list.addAll(it)
+                view?.notifyDataSetChanged()
+            }, { view?.showThrowable(it) })
         )
     }
 }

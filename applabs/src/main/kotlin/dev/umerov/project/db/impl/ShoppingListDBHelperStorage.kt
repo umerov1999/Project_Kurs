@@ -14,9 +14,9 @@ import dev.umerov.project.getString
 import dev.umerov.project.isNull
 import dev.umerov.project.model.main.labs.Product
 import dev.umerov.project.model.main.labs.ShoppingList
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.core.SingleEmitter
+import dev.umerov.project.util.coroutines.CoroutinesUtils.isActive
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class ShoppingListDBHelperStorage internal constructor(context: Context) :
     IShoppingListDBHelperStorage {
@@ -25,8 +25,8 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
         ProjectDBHelper(app)
     }
 
-    override fun getShoppingListHelper(): Single<List<String>> {
-        return Single.fromCallable {
+    override fun getShoppingListHelper(): Flow<List<String>> {
+        return flow {
             val cursor = helper.writableDatabase.rawQuery(
                 "SELECT ${ShoppingListColumns.FULL_TITLE} FROM ${ShoppingListColumns.TABLENAME} UNION ALL SELECT ${ShoppingProductColumns.FULL_NAME} FROM ${ShoppingProductColumns.TABLENAME};",
                 emptyArray()
@@ -37,12 +37,12 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
                     data.add(it.getString(0))
                 }
             }
-            data
+            emit(data)
         }
     }
 
-    override fun getShoppingList(id: Long?): Single<List<ShoppingList>> {
-        return Single.fromCallable {
+    override fun getShoppingList(id: Long?): Flow<List<ShoppingList>> {
+        return flow {
             val cursor = helper.writableDatabase.rawQuery(
                 "SELECT ${ShoppingListColumns.FULL_ID}, ${ShoppingListColumns.FULL_TITLE}, ${ShoppingListColumns.FULL_DESCRIPTION}, ${ShoppingListColumns.FULL_CREATION_DATE}, ${ShoppingListColumns.FULL_COLOR}, ${ShoppingListColumns.DB_PURCHASE}, ${ShoppingListColumns.DB_PLANNED_PURCHASE}\n" +
                         "FROM ${ShoppingListColumns.TABLENAME}\n" +
@@ -69,12 +69,12 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
                     data.add(item)
                 }
             }
-            data
+            emit(data)
         }
     }
 
-    override fun getProducts(ownerId: Long): Single<ArrayList<Product>> {
-        return Single.create { emitter: SingleEmitter<ArrayList<Product>> ->
+    override fun getProducts(ownerId: Long): Flow<ArrayList<Product>> {
+        return flow {
             val db = helper.readableDatabase
             val where = ShoppingProductColumns.OWNER_ID + " = ?"
             val args = arrayOf(ownerId.toString())
@@ -102,18 +102,18 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
                     )
                 }
             }
-            emitter.onSuccess(ret)
+            emit(ret)
         }
     }
 
-    override fun updateShoppingList(shoppingList: ShoppingList): Completable {
-        return Completable.create { emitter ->
+    override fun updateShoppingList(shoppingList: ShoppingList): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 if (shoppingList.db_id < 0) {
@@ -135,28 +135,27 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
                     cv.put(ShoppingListColumns.COLOR, shoppingList.color)
                     db.update(ShoppingListColumns.TABLENAME, cv, where, args)
                 }
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun updateProduct(product: Product): Completable {
-        return Completable.create { emitter ->
+    override fun updateProduct(product: Product): Flow<Boolean> {
+        return flow {
             if (product.db_owner_id < 0) {
-                emitter.tryOnError(UnsupportedOperationException())
-                return@create
+                throw UnsupportedOperationException()
             }
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 if (product.db_id < 0) {
@@ -182,48 +181,48 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
                     cv.put(ShoppingProductColumns.COLOR, product.color)
                     db.update(ShoppingProductColumns.TABLENAME, cv, where, args)
                 }
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun deleteProduct(id: Long): Completable {
-        return Completable.create { emitter ->
+    override fun deleteProduct(id: Long): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 val where = BaseColumns._ID + " = ?"
                 val args = arrayOf(id.toString())
 
                 db.delete(ShoppingProductColumns.TABLENAME, where, args)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun deleteShoppingList(id: Long): Completable {
-        return Completable.create { emitter ->
+    override fun deleteShoppingList(id: Long): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 val where = BaseColumns._ID + " = ?"
@@ -232,13 +231,13 @@ class ShoppingListDBHelperStorage internal constructor(context: Context) :
 
                 db.delete(ShoppingProductColumns.TABLENAME, whereProduct, args)
                 db.delete(ShoppingListColumns.TABLENAME, where, args)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 

@@ -47,7 +47,6 @@ import dev.umerov.project.activity.ActivityFeatures
 import dev.umerov.project.activity.ActivityUtils
 import dev.umerov.project.activity.EnterPinActivity
 import dev.umerov.project.activity.FileManagerSelectActivity
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.kJson
 import dev.umerov.project.listener.BackPressCallback
 import dev.umerov.project.listener.CanBackPressedCallback
@@ -66,7 +65,11 @@ import dev.umerov.project.settings.backup.SettingsBackup
 import dev.umerov.project.trimmedNonNullNoEmpty
 import dev.umerov.project.util.Utils
 import dev.umerov.project.util.Utils.getAppVersionName
-import dev.umerov.project.util.rxutils.RxUtils
+import dev.umerov.project.util.coroutines.CancelableJob
+import dev.umerov.project.util.coroutines.CoroutinesUtils.delayTaskFlow
+import dev.umerov.project.util.coroutines.CoroutinesUtils.syncSingle
+import dev.umerov.project.util.coroutines.CoroutinesUtils.syncSingleSafe
+import dev.umerov.project.util.coroutines.CoroutinesUtils.toMain
 import dev.umerov.project.util.serializeble.AbsDtoAdapter.Companion.asJsonObjectSafe
 import dev.umerov.project.util.serializeble.AbsDtoAdapter.Companion.asPrimitiveSafe
 import dev.umerov.project.util.serializeble.AbsDtoAdapter.Companion.hasArray
@@ -81,21 +84,18 @@ import dev.umerov.project.util.toast.CustomSnackbars
 import dev.umerov.project.util.toast.CustomToast.Companion.createCustomToast
 import dev.umerov.project.view.MySearchView
 import dev.umerov.project.view.natives.rlottie.RLottieImageView
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.disposables.Disposable
 import kotlinx.serialization.builtins.ListSerializer
 import okio.buffer
 import okio.source
 import java.io.File
 import java.io.FileOutputStream
-import java.util.concurrent.TimeUnit
 
 class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScreenChangeListener,
     BackPressCallback, CanBackPressedCallback {
     private var preferencesView: RecyclerView? = null
     private var layoutManager: LinearLayoutManager? = null
     private var searchView: MySearchView? = null
-    private var sleepDataDisposable = Disposable.disposed()
+    private var sleepDataDisposable = CancelableJob()
     private val SEARCH_DELAY = 2000
     override val keyInstanceState: String = "root_preferences"
 
@@ -121,7 +121,7 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
                     "db", kJson.encodeToJsonElement(
                         ListSerializer(CoinOperation.serializer()),
                         Includes.stores.projectStore().fetchCoinOperationsAllForBackup()
-                            .blockingGet()
+                            .syncSingle()
                     )
                 )
                 val bytes = Json { prettyPrint = true }.printJsonElement(root.build()).toByteArray(
@@ -180,7 +180,7 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
                                 it
                             )
                             for (i in s) {
-                                Includes.stores.projectStore().addOperation(i).blockingAwait()
+                                Includes.stores.projectStore().addOperation(i).syncSingleSafe()
                             }
                         }
                     }
@@ -233,7 +233,7 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
             )
             it.setOnQueryTextListener(object : MySearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    sleepDataDisposable.dispose()
+                    sleepDataDisposable.cancel()
                     if (query.nonNullNoEmpty() && query.trimmedNonNullNoEmpty()) {
                         preferencesAdapter?.findPreferences(requireActivity(), query, root)
                     }
@@ -241,11 +241,9 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
-                    sleepDataDisposable.dispose()
-                    sleepDataDisposable = Single.just(Any())
-                        .delay(SEARCH_DELAY.toLong(), TimeUnit.MILLISECONDS)
-                        .fromIOToMain()
-                        .subscribe({
+                    sleepDataDisposable.cancel()
+                    sleepDataDisposable.set(delayTaskFlow(SEARCH_DELAY.toLong())
+                        .toMain {
                             if (newText.nonNullNoEmpty() && newText.trimmedNonNullNoEmpty()) {
                                 preferencesAdapter?.findPreferences(
                                     requireActivity(),
@@ -253,7 +251,7 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
                                     root
                                 )
                             }
-                        }, { RxUtils.dummy() })
+                        })
                     return false
                 }
             })
@@ -296,7 +294,6 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
         }
     }
 
-    @Suppress("DEPRECATION")
     private fun createRootScreen() = screen(requireActivity()) {
         subScreen("general_preferences") {
             titleRes = R.string.general_settings
@@ -355,13 +352,11 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
                 showTickMarks = true
                 titleRes = R.string.font_size
                 onSeek {
-                    sleepDataDisposable.dispose()
-                    sleepDataDisposable = Single.just(Any())
-                        .delay(1, TimeUnit.SECONDS)
-                        .fromIOToMain()
-                        .subscribe({
+                    sleepDataDisposable.cancel()
+                    sleepDataDisposable.set(delayTaskFlow(1000)
+                        .toMain {
                             requireActivity().recreate()
-                        }, { RxUtils.dummy() })
+                        })
                 }
             }
 
@@ -765,7 +760,7 @@ class PreferencesFragment : AbsPreferencesFragment(), PreferencesAdapter.OnScree
     }
 
     override fun onDestroy() {
-        sleepDataDisposable.dispose()
+        sleepDataDisposable.cancel()
         preferencesView?.let { preferencesAdapter?.stopObserveScrollPosition(it) }
         preferencesAdapter?.onScreenChangeListener = null
         preferencesView?.adapter = null

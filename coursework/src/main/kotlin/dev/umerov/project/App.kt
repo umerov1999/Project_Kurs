@@ -1,17 +1,13 @@
 package dev.umerov.project
 
 import android.app.Application
-import android.os.Handler
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.camera.core.ImageProcessingUtil
 import dev.umerov.project.activity.crash.CrashUtils
 import dev.umerov.project.module.ProjectNative
 import dev.umerov.project.settings.Settings
 import dev.umerov.project.util.Camera2ImageProcessingUtil
-import dev.umerov.project.util.ErrorLocalizer
 import dev.umerov.project.util.Utils
-import dev.umerov.project.util.toast.CustomToast.Companion.createCustomToast
-import io.reactivex.rxjava3.plugins.RxJavaPlugins
 
 class App : Application() {
     override fun onCreate() {
@@ -38,19 +34,6 @@ class App : Application() {
         if (ProjectNative.isNativeLoaded) {
             ImageProcessingUtil.setProcessingUtil(Camera2ImageProcessingUtil)
         }
-        RxJavaPlugins.setErrorHandler {
-            it.printStackTrace()
-            Handler(mainLooper).post {
-                if (Settings.get().main().isDeveloper_mode) {
-                    createCustomToast(this, null)?.showToastError(
-                        ErrorLocalizer.localizeThrowable(
-                            this,
-                            it
-                        )
-                    )
-                }
-            }
-        }
     }
 
     companion object {
@@ -59,8 +42,9 @@ class App : Application() {
 
         val instance: App
             get() {
-                checkNotNull(sInstanse) { "App instance is null!!!" }
-                return sInstanse!!
+                sInstanse?.let {
+                    return it
+                } ?: throw IllegalStateException("App instance is null!!!")
             }
     }
 }

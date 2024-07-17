@@ -26,19 +26,16 @@ import dev.umerov.project.activity.ActivityFeatures
 import dev.umerov.project.activity.ActivityUtils
 import dev.umerov.project.activity.CreatePinActivity
 import dev.umerov.project.fragment.pin.createpin.CreatePinFragment
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.listener.BackPressCallback
 import dev.umerov.project.listener.CanBackPressedCallback
 import dev.umerov.project.nonNullNoEmpty
 import dev.umerov.project.settings.SecuritySettings
 import dev.umerov.project.settings.Settings
 import dev.umerov.project.trimmedNonNullNoEmpty
-import dev.umerov.project.util.rxutils.RxUtils
+import dev.umerov.project.util.coroutines.CancelableJob
+import dev.umerov.project.util.coroutines.CoroutinesUtils.delayTaskFlow
+import dev.umerov.project.util.coroutines.CoroutinesUtils.toMain
 import dev.umerov.project.view.MySearchView
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.disposables.Disposable
-import java.util.concurrent.TimeUnit
-
 
 class SecurityPreferencesFragment : AbsPreferencesFragment(),
     PreferencesAdapter.OnScreenChangeListener,
@@ -46,7 +43,7 @@ class SecurityPreferencesFragment : AbsPreferencesFragment(),
     private var preferencesView: RecyclerView? = null
     private var layoutManager: LinearLayoutManager? = null
     private var searchView: MySearchView? = null
-    private var sleepDataDisposable = Disposable.disposed()
+    private var sleepDataDisposable = CancelableJob()
     private val SEARCH_DELAY = 2000
     override val keyInstanceState: String = "security_preferences"
 
@@ -118,7 +115,7 @@ class SecurityPreferencesFragment : AbsPreferencesFragment(),
             })
             it.setOnQueryTextListener(object : MySearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?): Boolean {
-                    sleepDataDisposable.dispose()
+                    sleepDataDisposable.cancel()
                     if (query.nonNullNoEmpty() && query.trimmedNonNullNoEmpty()) {
                         preferencesAdapter?.findPreferences(requireActivity(), query, root)
                     }
@@ -126,11 +123,9 @@ class SecurityPreferencesFragment : AbsPreferencesFragment(),
                 }
 
                 override fun onQueryTextChange(newText: String?): Boolean {
-                    sleepDataDisposable.dispose()
-                    sleepDataDisposable = Single.just(Any())
-                        .delay(SEARCH_DELAY.toLong(), TimeUnit.MILLISECONDS)
-                        .fromIOToMain()
-                        .subscribe({
+                    sleepDataDisposable.cancel()
+                    sleepDataDisposable.set(delayTaskFlow(SEARCH_DELAY.toLong())
+                        .toMain {
                             if (newText.nonNullNoEmpty() && newText.trimmedNonNullNoEmpty()) {
                                 preferencesAdapter?.findPreferences(
                                     requireActivity(),
@@ -138,7 +133,7 @@ class SecurityPreferencesFragment : AbsPreferencesFragment(),
                                     root
                                 )
                             }
-                        }, { RxUtils.dummy() })
+                        })
                     return false
                 }
             })
@@ -185,7 +180,6 @@ class SecurityPreferencesFragment : AbsPreferencesFragment(),
         requestCreatePin.launch(o)
     }
 
-    @Suppress("DEPRECATION")
     private fun createRootScreen() = screen(requireActivity()) {
         collapseIcon = true
 
@@ -258,7 +252,7 @@ class SecurityPreferencesFragment : AbsPreferencesFragment(),
     }
 
     override fun onDestroy() {
-        sleepDataDisposable.dispose()
+        sleepDataDisposable.cancel()
         preferencesView?.let { preferencesAdapter?.stopObserveScrollPosition(it) }
         preferencesAdapter?.onScreenChangeListener = null
         preferencesView?.adapter = null

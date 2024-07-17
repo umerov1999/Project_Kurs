@@ -15,6 +15,7 @@ import dev.umerov.project.settings.CurrentTheme.getNavigationBarColor
 import dev.umerov.project.settings.CurrentTheme.getStatusBarColor
 import dev.umerov.project.settings.theme.ThemesController.currentStyle
 import dev.umerov.project.util.Utils
+import dev.umerov.project.util.Utils.hasVanillaIceCream
 
 abstract class NoMainActivity : AppCompatActivity() {
     private var mToolbar: Toolbar? = null
@@ -27,11 +28,16 @@ abstract class NoMainActivity : AppCompatActivity() {
         Utils.prepareDensity(this)
         super.onCreate(savedInstanceState)
         setContentView(noMainContentView)
-        val w = window
-        w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        w.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        w.statusBarColor = getStatusBarColor(this)
-        w.navigationBarColor = getNavigationBarColor(this)
+        if (!hasVanillaIceCream()) {
+            val w = window
+            if (!Utils.hasMarshmallow()) {
+                w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+                w.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            }
+
+            w.statusBarColor = getStatusBarColor(this)
+            w.navigationBarColor = getNavigationBarColor(this)
+        }
         supportFragmentManager.addOnBackStackChangedListener(mBackStackListener)
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {

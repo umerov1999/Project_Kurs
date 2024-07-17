@@ -2,8 +2,8 @@ package dev.umerov.project.fragment.main.finance
 
 import dev.umerov.project.Includes
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.model.main.labs.FinanceOperation
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
 
 class FinanceOperationsPresenter(private val ownerId: Long) :
     RxSupportPresenter<IFinanceOperationsView>() {
@@ -16,8 +16,8 @@ class FinanceOperationsPresenter(private val ownerId: Long) :
 
     fun fireStore(item: FinanceOperation) {
         val oldId = item.db_id
-        appendDisposable(
-            Includes.stores.financeStore().updateOperation(item).fromIOToMain().subscribe({
+        appendJob(
+            Includes.stores.financeStore().updateOperation(item).fromIOToMain({
                 if (oldId < 0) {
                     list.add(0, item)
                     view?.notifyDataAdded(0, 1)
@@ -46,14 +46,13 @@ class FinanceOperationsPresenter(private val ownerId: Long) :
         if (pos < 0 || pos > list.size - 1) {
             return
         }
-        appendDisposable(
-            Includes.stores.financeStore().deleteOperation(list[pos].db_id).fromIOToMain()
-                .subscribe({
-                    list.removeAt(pos)
-                    view?.notifyDataRemoved(pos, 1)
-                }, {
-                    view?.showThrowable(it)
-                })
+        appendJob(
+            Includes.stores.financeStore().deleteOperation(list[pos].db_id).fromIOToMain({
+                list.removeAt(pos)
+                view?.notifyDataRemoved(pos, 1)
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -85,14 +84,13 @@ class FinanceOperationsPresenter(private val ownerId: Long) :
         if (pos < 0 || pos > list.size - 1 || list[pos].tempIsAnimation || !list[pos].tempIsEditMode) {
             return
         }
-        appendDisposable(
-            Includes.stores.financeStore().deleteOperation(list[pos].db_id).fromIOToMain()
-                .subscribe({
-                    list.removeAt(pos)
-                    view?.notifyDataRemoved(pos, 1)
-                }, {
-                    view?.showThrowable(it)
-                })
+        appendJob(
+            Includes.stores.financeStore().deleteOperation(list[pos].db_id).fromIOToMain({
+                list.removeAt(pos)
+                view?.notifyDataRemoved(pos, 1)
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -116,13 +114,12 @@ class FinanceOperationsPresenter(private val ownerId: Long) :
     }
 
     fun loadDb() {
-        appendDisposable(
-            Includes.stores.financeStore().getOperations(ownerId).fromIOToMain()
-                .subscribe({
-                    list.clear()
-                    list.addAll(it)
-                    view?.notifyDataSetChanged()
-                }, { view?.showThrowable(it) })
+        appendJob(
+            Includes.stores.financeStore().getOperations(ownerId).fromIOToMain({
+                list.clear()
+                list.addAll(it)
+                view?.notifyDataSetChanged()
+            }, { view?.showThrowable(it) })
         )
     }
 

@@ -10,21 +10,14 @@ import androidx.recyclerview.widget.RecyclerView
 import dev.umerov.project.R
 import dev.umerov.project.model.FileItemSelect
 import dev.umerov.project.util.Utils
-import io.reactivex.rxjava3.disposables.Disposable
 
 class FileManagerSelectAdapter(private var data: List<FileItemSelect>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var clickListener: ClickListener? = null
-    private var mPlayerDisposable = Disposable.disposed()
 
     fun setItems(data: List<FileItemSelect>) {
         this.data = data
         notifyDataSetChanged()
-    }
-
-    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView)
-        mPlayerDisposable.dispose()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {

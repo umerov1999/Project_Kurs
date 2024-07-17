@@ -2,8 +2,8 @@ package dev.umerov.project.fragment.main.shoppinglist
 
 import dev.umerov.project.Includes
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.model.main.labs.ShoppingList
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
 
 class ShoppingListPresenter : RxSupportPresenter<IShoppingListView>() {
     private val list = ArrayList<ShoppingList>()
@@ -22,24 +22,23 @@ class ShoppingListPresenter : RxSupportPresenter<IShoppingListView>() {
 
     fun fireStore(shoppingList: ShoppingList) {
         val oldId = shoppingList.db_id
-        appendDisposable(
-            Includes.stores.shoppingStore().updateShoppingList(shoppingList).fromIOToMain()
-                .subscribe({
-                    if (oldId < 0) {
-                        list.add(0, shoppingList)
-                        view?.notifyDataAdded(0, 1)
-                    } else {
-                        for (i in list.indices) {
-                            if (list[i].db_id == oldId) {
-                                list[i] = shoppingList
-                                view?.notifyItemChanged(i)
-                                break
-                            }
+        appendJob(
+            Includes.stores.shoppingStore().updateShoppingList(shoppingList).fromIOToMain({
+                if (oldId < 0) {
+                    list.add(0, shoppingList)
+                    view?.notifyDataAdded(0, 1)
+                } else {
+                    for (i in list.indices) {
+                        if (list[i].db_id == oldId) {
+                            list[i] = shoppingList
+                            view?.notifyItemChanged(i)
+                            break
                         }
                     }
-                }, {
-                    view?.showThrowable(it)
-                })
+                }
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -51,14 +50,13 @@ class ShoppingListPresenter : RxSupportPresenter<IShoppingListView>() {
         if (pos < 0 || pos > list.size - 1) {
             return
         }
-        appendDisposable(
-            Includes.stores.shoppingStore().deleteShoppingList(list[pos].db_id).fromIOToMain()
-                .subscribe({
-                    list.removeAt(pos)
-                    view?.notifyDataRemoved(pos, 1)
-                }, {
-                    view?.showThrowable(it)
-                })
+        appendJob(
+            Includes.stores.shoppingStore().deleteShoppingList(list[pos].db_id).fromIOToMain({
+                list.removeAt(pos)
+                view?.notifyDataRemoved(pos, 1)
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -98,14 +96,13 @@ class ShoppingListPresenter : RxSupportPresenter<IShoppingListView>() {
         if (pos < 0 || pos > list.size - 1 || list[pos].tempIsAnimation || !list[pos].tempIsEditMode) {
             return
         }
-        appendDisposable(
-            Includes.stores.shoppingStore().deleteShoppingList(list[pos].db_id).fromIOToMain()
-                .subscribe({
-                    list.removeAt(pos)
-                    view?.notifyDataRemoved(pos, 1)
-                }, {
-                    view?.showThrowable(it)
-                })
+        appendJob(
+            Includes.stores.shoppingStore().deleteShoppingList(list[pos].db_id).fromIOToMain({
+                list.removeAt(pos)
+                view?.notifyDataRemoved(pos, 1)
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -122,10 +119,9 @@ class ShoppingListPresenter : RxSupportPresenter<IShoppingListView>() {
     fun loadDb() {
         val tmpNeedReload = needReload
         needReload = -1L
-        appendDisposable(
+        appendJob(
             Includes.stores.shoppingStore()
-                .getShoppingList(if (tmpNeedReload >= 0) tmpNeedReload else null).fromIOToMain()
-                .subscribe({
+                .getShoppingList(if (tmpNeedReload >= 0) tmpNeedReload else null).fromIOToMain({
                     if (tmpNeedReload >= 0) {
                         if (it.isNotEmpty()) {
                             for (i in list.indices) {

@@ -122,7 +122,7 @@ internal class MainSettings(context: Context) : IMainSettings {
 
     override val photoExt: Set<String>
         get() = getPreferences(app)
-            .getStringSet("photo_ext", setOf("gif", "jpg", "jpeg", "jpg", "webp", "png", "tiff"))!!
+            .getStringSet("photo_ext", setOf("jpg", "jpeg", "heic", "webp", "png", "tiff"))!!
 
     override val audioExt: Set<String>
         get() = getPreferences(app)

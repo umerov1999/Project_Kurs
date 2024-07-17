@@ -2,13 +2,15 @@ package dev.umerov.project.fragment.main.lab17
 
 import dev.umerov.project.R
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
-import io.reactivex.rxjava3.core.Single
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import okhttp3.FormBody
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.cancellation.CancellationException
 
 class Lab17Presenter(private val isPost: Boolean) : RxSupportPresenter<ILab17View>() {
     private var isFirst = true
@@ -31,8 +33,8 @@ class Lab17Presenter(private val isPost: Boolean) : RxSupportPresenter<ILab17Vie
         body: FormBody?,
         onlySuccessful: Boolean,
         post: Boolean
-    ): Single<String> {
-        return Single.create { emitter ->
+    ): Flow<String> {
+        return flow {
             val request = Request.Builder()
                 .url(
                     url
@@ -55,19 +57,19 @@ class Lab17Presenter(private val isPost: Boolean) : RxSupportPresenter<ILab17Vie
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .callTimeout(30, TimeUnit.SECONDS)
             val call = builder.build().newCall(request.build())
-            emitter.setCancellable { call.cancel() }
             try {
                 val response = call.execute()
                 if (!response.isSuccessful && onlySuccessful) {
-                    emitter.tryOnError(Exception(response.code.toString()))
+                    throw Exception(response.code.toString())
                 } else {
-                    emitter.onSuccess(
+                    emit(
                         response.body.string()
                     )
                 }
                 response.close()
-            } catch (e: Exception) {
-                emitter.tryOnError(e)
+            } catch (e: CancellationException) {
+                call.cancel()
+                throw e
             }
         }
     }
@@ -101,13 +103,13 @@ class Lab17Presenter(private val isPost: Boolean) : RxSupportPresenter<ILab17Vie
     }
 
     fun fireSubmit(url: String, firstName: String, lastName: String) {
-        appendDisposable(
+        appendJob(
             requestInternal(
                 url,
                 form("firstname" to firstName, "lastname" to lastName),
                 onlySuccessful = true,
                 post = isPost
-            ).fromIOToMain().subscribe({
+            ).fromIOToMain({
                 view?.displayAnswer(it)
             }, {
                 view?.showThrowable(it)

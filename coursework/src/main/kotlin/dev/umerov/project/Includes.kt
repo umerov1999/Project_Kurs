@@ -6,9 +6,7 @@ import dev.umerov.project.db.impl.AppStorages
 import dev.umerov.project.db.interfaces.IStorages
 import dev.umerov.project.settings.ISettings
 import dev.umerov.project.settings.SettingsImpl
-import dev.umerov.project.util.rxutils.io.AndroidSchedulers
-import io.reactivex.rxjava3.core.Scheduler
-import io.reactivex.rxjava3.subjects.PublishSubject
+import dev.umerov.project.util.coroutines.CoroutinesUtils
 
 object Includes {
     val settings: ISettings by lazy {
@@ -19,13 +17,9 @@ object Includes {
         AppStorages(instance)
     }
 
-    fun provideMainThreadScheduler(): Scheduler {
-        return AndroidSchedulers.mainThread()
-    }
-
     fun provideApplicationContext(): Context {
         return instance
     }
 
-    val needReadRegister: PublishSubject<Boolean> = PublishSubject.create()
+    val needReadRegister = CoroutinesUtils.createPublishSubject<Boolean>()
 }

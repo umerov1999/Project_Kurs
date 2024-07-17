@@ -13,15 +13,16 @@ import android.widget.FrameLayout
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import dev.umerov.project.Includes
 import dev.umerov.project.R
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.getParcelableArrayListCompat
 import dev.umerov.project.getParcelableCompat
 import dev.umerov.project.model.main.labs.Lab11Genre
-import io.reactivex.rxjava3.disposables.Disposable
-import io.reactivex.rxjava3.subjects.PublishSubject
+import dev.umerov.project.util.coroutines.CancelableJob
+import dev.umerov.project.util.coroutines.CoroutinesUtils
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
+import dev.umerov.project.util.coroutines.CoroutinesUtils.sharedFlowToMain
 
 class Lab11GenreSelect : FrameLayout {
-    private var disposable = Disposable.disposed()
+    private var disposable = CancelableJob()
     private val list = ArrayList<Lab11Genre>()
     var selected: Lab11Genre? = null
         private set
@@ -50,7 +51,7 @@ class Lab11GenreSelect : FrameLayout {
     private fun init(context: Context) {
         root = LayoutInflater.from(context).inflate(R.layout.entry_lab11_select_genre, this)
         if (!isInEditMode) {
-            changedObserve.subscribe {
+            changedObserve.sharedFlowToMain {
                 if (isAttached) {
                     fetchList()
                 } else {
@@ -118,7 +119,7 @@ class Lab11GenreSelect : FrameLayout {
     }
 
     private fun fetchList() {
-        disposable = Includes.stores.projectStore().getGenres().fromIOToMain().subscribe({
+        disposable += Includes.stores.projectStore().getGenres().fromIOToMain({
             list.clear()
             list.addAll(it)
             updateElements()
@@ -145,11 +146,11 @@ class Lab11GenreSelect : FrameLayout {
         if (isInEditMode) {
             return
         }
-        disposable.dispose()
+        disposable.cancel()
         isAttached = false
     }
 
     companion object {
-        val changedObserve: PublishSubject<Boolean> = PublishSubject.create()
+        val changedObserve = CoroutinesUtils.createPublishSubject<Boolean>()
     }
 }

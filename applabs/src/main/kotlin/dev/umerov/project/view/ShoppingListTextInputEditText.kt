@@ -9,13 +9,13 @@ import android.widget.ArrayAdapter
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import dev.umerov.project.Includes
 import dev.umerov.project.R
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.getParcelableCompat
-import io.reactivex.rxjava3.disposables.Disposable
+import dev.umerov.project.util.coroutines.CancelableJob
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
 
 class ShoppingListTextInputEditText : MaterialAutoCompleteTextView {
     private var listQueries = ArrayList<String?>()
-    private var mQueryDisposable = Disposable.disposed()
+    private var mQueryDisposable = CancelableJob()
     private var isFetchedListQueries = false
     private var versionTmp: Int = version
 
@@ -44,14 +44,13 @@ class ShoppingListTextInputEditText : MaterialAutoCompleteTextView {
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        mQueryDisposable.dispose()
+        mQueryDisposable.cancel()
     }
 
     private fun loadQueries() {
-        mQueryDisposable.dispose()
-        mQueryDisposable = Includes.stores.shoppingStore().getShoppingListHelper()
-            .fromIOToMain()
-            .subscribe({ s ->
+        mQueryDisposable.cancel()
+        mQueryDisposable += Includes.stores.shoppingStore().getShoppingListHelper()
+            .fromIOToMain({ s ->
                 isFetchedListQueries = true
                 listQueries.clear()
                 listQueries.addAll(s)

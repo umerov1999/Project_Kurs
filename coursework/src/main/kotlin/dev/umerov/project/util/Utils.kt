@@ -1,6 +1,5 @@
 package dev.umerov.project.util
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.PendingIntent
 import android.content.Context
@@ -21,7 +20,7 @@ import androidx.core.graphics.ColorUtils
 import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dev.umerov.project.BuildConfig
-import dev.umerov.project.Includes.provideMainThreadScheduler
+import dev.umerov.project.Includes
 import dev.umerov.project.R
 import dev.umerov.project.model.Lang
 import dev.umerov.project.module.rlottie.RLottieDrawable
@@ -36,7 +35,6 @@ import dev.umerov.project.view.pager.GateTransformer
 import dev.umerov.project.view.pager.SliderTransformer
 import dev.umerov.project.view.pager.Transformers_Types
 import dev.umerov.project.view.pager.ZoomOutTransformer
-import io.reactivex.rxjava3.core.Completable
 import java.io.Closeable
 import java.io.IOException
 import java.util.Calendar
@@ -130,6 +128,10 @@ object Utils {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
     }
 
+    fun hasVanillaIceCream(): Boolean {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM && Includes.provideApplicationContext().applicationInfo.targetSdkVersion >= Build.VERSION_CODES.VANILLA_ICE_CREAM
+    }
+
     @Suppress("deprecation")
     fun finishActivityImmediate(activity: Activity) {
         activity.finish()
@@ -149,7 +151,6 @@ object Utils {
         return null
     }
 
-    @Suppress("deprecation")
     fun getAppVersionName(context: Context): String? {
         return try {
             val packageInfo = if (hasTiramisu()) context.packageManager.getPackageInfo(
@@ -306,13 +307,6 @@ object Utils {
             return min
         }
         return value
-    }
-
-    @SuppressLint("CheckResult")
-    inline fun inMainThread(crossinline function: () -> Unit) {
-        Completable.complete()
-            .observeOn(provideMainThreadScheduler())
-            .subscribe { function.invoke() }
     }
 
     fun checkValues(values: Collection<Boolean?>): Boolean {

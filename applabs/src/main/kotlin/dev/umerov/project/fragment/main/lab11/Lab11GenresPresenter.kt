@@ -2,8 +2,9 @@ package dev.umerov.project.fragment.main.lab11
 
 import dev.umerov.project.Includes
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.model.main.labs.Lab11Genre
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
+import dev.umerov.project.util.coroutines.CoroutinesUtils.myEmit
 import dev.umerov.project.view.Lab11GenreSelect
 
 class Lab11GenresPresenter : RxSupportPresenter<ILab11GenresView>() {
@@ -15,8 +16,8 @@ class Lab11GenresPresenter : RxSupportPresenter<ILab11GenresView>() {
 
     fun fireStore(genre: Lab11Genre) {
         val oldId = genre.db_id
-        appendDisposable(
-            Includes.stores.projectStore().updateGenre(genre).fromIOToMain().subscribe({
+        appendJob(
+            Includes.stores.projectStore().updateGenre(genre).fromIOToMain({
                 if (oldId < 0) {
                     list.add(0, genre)
                     view?.notifyDataAdded(0, 1)
@@ -29,7 +30,7 @@ class Lab11GenresPresenter : RxSupportPresenter<ILab11GenresView>() {
                         }
                     }
                 }
-                Lab11GenreSelect.changedObserve.onNext(true)
+                Lab11GenreSelect.changedObserve.myEmit(true)
             }, {
                 view?.showThrowable(it)
             })
@@ -44,11 +45,11 @@ class Lab11GenresPresenter : RxSupportPresenter<ILab11GenresView>() {
         if (pos < 0 || pos > list.size - 1) {
             return
         }
-        appendDisposable(
-            Includes.stores.projectStore().deleteGenre(list[pos].db_id).fromIOToMain().subscribe({
+        appendJob(
+            Includes.stores.projectStore().deleteGenre(list[pos].db_id).fromIOToMain({
                 list.removeAt(pos)
                 view?.notifyDataRemoved(pos, 1)
-                Lab11GenreSelect.changedObserve.onNext(true)
+                Lab11GenreSelect.changedObserve.myEmit(true)
             }, {
                 view?.showThrowable(it)
             })
@@ -83,11 +84,11 @@ class Lab11GenresPresenter : RxSupportPresenter<ILab11GenresView>() {
         if (pos < 0 || pos > list.size - 1 || list[pos].tempIsAnimation || !list[pos].tempIsEditMode) {
             return
         }
-        appendDisposable(
-            Includes.stores.projectStore().deleteGenre(list[pos].db_id).fromIOToMain().subscribe({
+        appendJob(
+            Includes.stores.projectStore().deleteGenre(list[pos].db_id).fromIOToMain({
                 list.removeAt(pos)
                 view?.notifyDataRemoved(pos, 1)
-                Lab11GenreSelect.changedObserve.onNext(true)
+                Lab11GenreSelect.changedObserve.myEmit(true)
             }, {
                 view?.showThrowable(it)
             })
@@ -105,13 +106,12 @@ class Lab11GenresPresenter : RxSupportPresenter<ILab11GenresView>() {
     }
 
     init {
-        appendDisposable(
-            Includes.stores.projectStore().getGenres().fromIOToMain()
-                .subscribe({
-                    list.clear()
-                    list.addAll(it)
-                    view?.notifyDataSetChanged()
-                }, { view?.showThrowable(it) })
+        appendJob(
+            Includes.stores.projectStore().getGenres().fromIOToMain({
+                list.clear()
+                list.addAll(it)
+                view?.notifyDataSetChanged()
+            }, { view?.showThrowable(it) })
         )
     }
 }

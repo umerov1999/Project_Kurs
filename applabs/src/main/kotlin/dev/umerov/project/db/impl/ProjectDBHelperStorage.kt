@@ -21,9 +21,10 @@ import dev.umerov.project.model.FileType
 import dev.umerov.project.model.main.labs.Lab11Film
 import dev.umerov.project.model.main.labs.Lab11Genre
 import dev.umerov.project.model.main.labs.Lab14AudioAlbum
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.core.SingleEmitter
+import dev.umerov.project.util.coroutines.CoroutinesUtils.emptyTaskFlow
+import dev.umerov.project.util.coroutines.CoroutinesUtils.isActive
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class ProjectDBHelperStorage internal constructor(context: Context) :
     IProjectDBHelperStorage {
@@ -32,8 +33,8 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
         ProjectDBHelper(app)
     }
 
-    override fun getQueries(sourceId: Int): Single<List<String>> {
-        return Single.fromCallable {
+    override fun getQueries(sourceId: Int): Flow<List<String>> {
+        return flow {
             val where = SearchRequestColumns.SOURCE_ID + " = ?"
             val args = arrayOf(sourceId.toString())
             val cursor = helper.writableDatabase.query(
@@ -46,24 +47,24 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                     data.add(it.getString(SearchRequestColumns.QUERY) ?: return@use)
                 }
             }
-            data
+            emit(data)
         }
     }
 
-    override fun insertQuery(sourceId: Int, query: String?): Completable {
+    override fun insertQuery(sourceId: Int, query: String?): Flow<Boolean> {
         if (query == null) {
-            return Completable.complete()
+            return emptyTaskFlow()
         }
         val queryClean = query.trim { it <= ' ' }
         return if (queryClean.isEmpty()) {
-            Completable.complete()
-        } else Completable.create { emitter ->
+            emptyTaskFlow()
+        } else flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             db.delete(
                 SearchRequestColumns.TABLENAME,
@@ -74,18 +75,18 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                 cv.put(SearchRequestColumns.SOURCE_ID, sourceId)
                 cv.put(SearchRequestColumns.QUERY, queryClean)
                 db.insert(SearchRequestColumns.TABLENAME, null, cv)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun getFiles(parent: String): Single<List<FileItem>> {
-        return Single.fromCallable {
+    override fun getFiles(parent: String): Flow<List<FileItem>> {
+        return flow {
             val where = FilesColumns.PARENT_DIR + " = ?"
             val args = arrayOf(parent)
             val cursor = helper.writableDatabase.query(
@@ -114,18 +115,18 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                     )
                 }
             }
-            data
+            emit(data)
         }
     }
 
-    override fun insertFiles(parent: String, files: List<FileItem>): Completable {
-        return Completable.create { emitter ->
+    override fun insertFiles(parent: String, files: List<FileItem>): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             db.delete(
                 FilesColumns.TABLENAME,
@@ -146,13 +147,13 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                     cv.put(FilesColumns.CAN_READ, if (i.isCanRead) 1 else 0)
                     db.insert(FilesColumns.TABLENAME, null, cv)
                 }
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
@@ -164,17 +165,18 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
         helper.writableDatabase.delete(FilesColumns.TABLENAME, null, null)
     }
 
-    override fun deleteQuery(sourceId: Int): Completable {
-        return Completable.fromAction {
+    override fun deleteQuery(sourceId: Int): Flow<Boolean> {
+        return flow {
             helper.writableDatabase.delete(
                 SearchRequestColumns.TABLENAME,
                 SearchRequestColumns.SOURCE_ID + " = ?", arrayOf(sourceId.toString())
             )
+            emit(true)
         }
     }
 
-    override fun getFilms(): Single<ArrayList<Lab11Film>> {
-        return Single.create { emitter: SingleEmitter<ArrayList<Lab11Film>> ->
+    override fun getFilms(): Flow<ArrayList<Lab11Film>> {
+        return flow {
             val db = helper.readableDatabase
             val cursor = db.rawQuery(
                 "SELECT ${Lab11FilmsColumns.FULL_ID}, " +
@@ -202,12 +204,12 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                     ret.add(s)
                 }
             }
-            emitter.onSuccess(ret)
+            emit(ret)
         }
     }
 
-    override fun getGenres(): Single<ArrayList<Lab11Genre>> {
-        return Single.create { emitter: SingleEmitter<ArrayList<Lab11Genre>> ->
+    override fun getGenres(): Flow<ArrayList<Lab11Genre>> {
+        return flow {
             val db = helper.readableDatabase
 
             val cursor = db.query(
@@ -228,12 +230,12 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                     )
                 }
             }
-            emitter.onSuccess(ret)
+            emit(ret)
         }
     }
 
-    override fun getPlaylists(@IdRes checkedItem: Int): Single<ArrayList<Lab14AudioAlbum>> {
-        return Single.create { emitter: SingleEmitter<ArrayList<Lab14AudioAlbum>> ->
+    override fun getPlaylists(@IdRes checkedItem: Int): Flow<ArrayList<Lab14AudioAlbum>> {
+        return flow {
             val db = helper.readableDatabase
             val cursor = when (checkedItem) {
                 R.id.sort_by_artist -> {
@@ -285,18 +287,18 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                     )
                 }
             }
-            emitter.onSuccess(ret)
+            emit(ret)
         }
     }
 
-    override fun updateGenre(genre: Lab11Genre): Completable {
-        return Completable.create { emitter ->
+    override fun updateGenre(genre: Lab11Genre): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 if (genre.db_id < 0) {
@@ -312,48 +314,48 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                     cv.put(Lab11GenresColumns.NAME, genre.name)
                     db.update(Lab11GenresColumns.TABLENAME, cv, where, args)
                 }
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun deleteGenre(id: Long): Completable {
-        return Completable.create { emitter ->
+    override fun deleteGenre(id: Long): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 val where = BaseColumns._ID + " = ?"
                 val args = arrayOf(id.toString())
 
                 db.delete(Lab11GenresColumns.TABLENAME, where, args)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun updateFilm(film: Lab11Film): Completable {
-        return Completable.create { emitter ->
+    override fun updateFilm(film: Lab11Film): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 if (film.db_id < 0) {
@@ -375,48 +377,48 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                     cv.put(Lab11FilmsColumns.THUMB_PATH, film.thumbPath)
                     db.update(Lab11FilmsColumns.TABLENAME, cv, where, args)
                 }
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun deleteFilm(id: Long): Completable {
-        return Completable.create { emitter ->
+    override fun deleteFilm(id: Long): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 val where = BaseColumns._ID + " = ?"
                 val args = arrayOf(id.toString())
 
                 db.delete(Lab11FilmsColumns.TABLENAME, where, args)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun updatePlaylist(playlist: Lab14AudioAlbum): Completable {
-        return Completable.create { emitter ->
+    override fun updatePlaylist(playlist: Lab14AudioAlbum): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 if (playlist.db_id < 0) {
@@ -440,44 +442,44 @@ class ProjectDBHelperStorage internal constructor(context: Context) :
                     cv.put(Lab14PlaylistColumns.THUMB_PATH, playlist.thumbPath)
                     db.update(Lab14PlaylistColumns.TABLENAME, cv, where, args)
                 }
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun deletePlaylist(id: Long): Completable {
-        return Completable.create { emitter ->
+    override fun deletePlaylist(id: Long): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 val where = BaseColumns._ID + " = ?"
                 val args = arrayOf(id.toString())
 
                 db.delete(Lab14PlaylistColumns.TABLENAME, where, args)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun drop(): Completable {
-        return Completable.create { emitter ->
+    override fun drop(): Flow<Boolean> {
+        return flow {
             helper.purge(helper.writableDatabase)
-            emitter.onComplete()
+            emit(true)
         }
     }
 

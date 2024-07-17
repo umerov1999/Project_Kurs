@@ -15,9 +15,9 @@ import dev.umerov.project.getString
 import dev.umerov.project.model.main.labs.FinanceBalance
 import dev.umerov.project.model.main.labs.FinanceOperation
 import dev.umerov.project.model.main.labs.FinanceWallet
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
-import io.reactivex.rxjava3.core.SingleEmitter
+import dev.umerov.project.util.coroutines.CoroutinesUtils.isActive
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class FinanceDBHelperStorage internal constructor(context: Context) :
     IFinanceDBHelperStorage {
@@ -26,8 +26,8 @@ class FinanceDBHelperStorage internal constructor(context: Context) :
         ProjectDBHelper(app)
     }
 
-    override fun getWallets(isCreditCard: Boolean, id: Long?): Single<List<FinanceWallet>> {
-        return Single.fromCallable {
+    override fun getWallets(isCreditCard: Boolean, id: Long?): Flow<List<FinanceWallet>> {
+        return flow {
             val cursor = helper.writableDatabase.rawQuery(
                 "SELECT ${FinanceWalletsColumns.FULL_ID}, ${FinanceWalletsColumns.FULL_TITLE}, ${FinanceWalletsColumns.FULL_IS_CREDIT_CARD}, ${FinanceWalletsColumns.FULL_CREATED_DATE}, ${FinanceWalletsColumns.FULL_COLOR}, ${FinanceWalletsColumns.COINS_SUM_IN}, ${FinanceWalletsColumns.COINS_SUM_OUT}\n" +
                         "FROM ${FinanceWalletsColumns.TABLENAME}\n" +
@@ -53,18 +53,18 @@ class FinanceDBHelperStorage internal constructor(context: Context) :
                     data.add(item)
                 }
             }
-            data
+            emit(data)
         }
     }
 
-    override fun updateWallet(wallet: FinanceWallet): Completable {
-        return Completable.create { emitter ->
+    override fun updateWallet(wallet: FinanceWallet): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 if (wallet.db_id < 0) {
@@ -86,42 +86,42 @@ class FinanceDBHelperStorage internal constructor(context: Context) :
                     cv.put(FinanceWalletsColumns.COLOR, wallet.color)
                     db.update(FinanceWalletsColumns.TABLENAME, cv, where, args)
                 }
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun deleteWallet(id: Long): Completable {
-        return Completable.create { emitter ->
+    override fun deleteWallet(id: Long): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 val where = BaseColumns._ID + " = ?"
                 val args = arrayOf(id.toString())
 
                 db.delete(FinanceWalletsColumns.TABLENAME, where, args)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun getOperations(ownerId: Long): Single<ArrayList<FinanceOperation>> {
-        return Single.create { emitter: SingleEmitter<ArrayList<FinanceOperation>> ->
+    override fun getOperations(ownerId: Long): Flow<ArrayList<FinanceOperation>> {
+        return flow {
             val db = helper.readableDatabase
             val where = FinanceOperationsColumns.OWNER_ID + " = ?"
             val args = arrayOf(ownerId.toString())
@@ -150,18 +150,18 @@ class FinanceDBHelperStorage internal constructor(context: Context) :
                     )
                 }
             }
-            emitter.onSuccess(ret)
+            emit(ret)
         }
     }
 
-    override fun updateOperation(operation: FinanceOperation): Completable {
-        return Completable.create { emitter ->
+    override fun updateOperation(operation: FinanceOperation): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 if (operation.db_id < 0) {
@@ -189,42 +189,42 @@ class FinanceDBHelperStorage internal constructor(context: Context) :
                     cv.put(FinanceOperationsColumns.COLOR, operation.color)
                     db.update(FinanceOperationsColumns.TABLENAME, cv, where, args)
                 }
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun deleteOperation(id: Long): Completable {
-        return Completable.create { emitter ->
+    override fun deleteOperation(id: Long): Flow<Boolean> {
+        return flow {
             val db = helper.writableDatabase
             db.beginTransaction()
-            if (emitter.isDisposed) {
+            if (!isActive()) {
                 db.endTransaction()
-                emitter.onComplete()
-                return@create
+                emit(false)
+                return@flow
             }
             try {
                 val where = BaseColumns._ID + " = ?"
                 val args = arrayOf(id.toString())
 
                 db.delete(FinanceOperationsColumns.TABLENAME, where, args)
-                if (!emitter.isDisposed) {
+                if (isActive()) {
                     db.setTransactionSuccessful()
                 }
             } finally {
                 db.endTransaction()
             }
-            emitter.onComplete()
+            emit(true)
         }
     }
 
-    override fun fetchBalance(): Single<FinanceBalance> {
-        return Single.fromCallable {
+    override fun fetchBalance(): Flow<FinanceBalance> {
+        return flow {
             val cursor = helper.writableDatabase.rawQuery(
                 "SELECT ${FinanceWalletsColumns.FULL_IS_CREDIT_CARD}, ${FinanceWalletsColumns.COINS_SUM_IN}, ${FinanceWalletsColumns.COINS_SUM_OUT}\n" +
                         "FROM ${FinanceWalletsColumns.TABLENAME}\n" +
@@ -256,7 +256,7 @@ class FinanceDBHelperStorage internal constructor(context: Context) :
                     }
                 }
             }
-            data
+            emit(data)
         }
     }
 

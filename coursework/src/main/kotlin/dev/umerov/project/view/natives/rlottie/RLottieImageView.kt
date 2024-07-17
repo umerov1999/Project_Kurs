@@ -10,7 +10,6 @@ import dev.umerov.project.R
 import dev.umerov.project.module.BufferWriteNative
 import dev.umerov.project.module.ProjectNative
 import dev.umerov.project.module.rlottie.RLottieDrawable
-import io.reactivex.rxjava3.disposables.Disposable
 import java.io.File
 
 class RLottieImageView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) :
@@ -20,7 +19,6 @@ class RLottieImageView @JvmOverloads constructor(context: Context, attrs: Attrib
     private var autoRepeat: Boolean
     private var attachedToWindow = false
     private var playing = false
-    private var mDisposable: Disposable? = null
     fun clearLayerColors() {
         layerColors?.clear()
     }
@@ -107,7 +105,6 @@ class RLottieImageView @JvmOverloads constructor(context: Context, attrs: Attrib
     }
 
     fun clearAnimationDrawable() {
-        mDisposable?.dispose()
         animatedDrawable?.let {
             it.stop()
             it.callback = null
@@ -128,7 +125,6 @@ class RLottieImageView @JvmOverloads constructor(context: Context, attrs: Attrib
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        mDisposable?.dispose()
         attachedToWindow = false
         animatedDrawable?.stop()
         animatedDrawable?.setCurrentParentView(null)
@@ -149,7 +145,6 @@ class RLottieImageView @JvmOverloads constructor(context: Context, attrs: Attrib
     override fun setImageDrawable(dr: Drawable?) {
         super.setImageDrawable(dr)
         if (dr !is RLottieDrawable) {
-            mDisposable?.dispose()
             animatedDrawable?.let {
                 it.stop()
                 it.callback = null
@@ -161,7 +156,6 @@ class RLottieImageView @JvmOverloads constructor(context: Context, attrs: Attrib
 
     override fun setImageBitmap(bm: Bitmap?) {
         super.setImageBitmap(bm)
-        mDisposable?.dispose()
         animatedDrawable?.let {
             it.stop()
             it.callback = null
@@ -172,7 +166,6 @@ class RLottieImageView @JvmOverloads constructor(context: Context, attrs: Attrib
 
     override fun setImageResource(resId: Int) {
         super.setImageResource(resId)
-        mDisposable?.dispose()
         animatedDrawable?.let {
             it.stop()
             it.callback = null

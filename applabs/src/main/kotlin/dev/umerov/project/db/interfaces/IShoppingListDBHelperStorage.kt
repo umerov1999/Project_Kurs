@@ -2,15 +2,14 @@ package dev.umerov.project.db.interfaces
 
 import dev.umerov.project.model.main.labs.Product
 import dev.umerov.project.model.main.labs.ShoppingList
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.core.Single
+import kotlinx.coroutines.flow.Flow
 
 interface IShoppingListDBHelperStorage {
-    fun getShoppingListHelper(): Single<List<String>>
-    fun getShoppingList(id: Long? = null): Single<List<ShoppingList>>
-    fun getProducts(ownerId: Long): Single<ArrayList<Product>>
-    fun updateShoppingList(shoppingList: ShoppingList): Completable
-    fun updateProduct(product: Product): Completable
-    fun deleteProduct(id: Long): Completable
-    fun deleteShoppingList(id: Long): Completable
+    fun getShoppingListHelper(): Flow<List<String>>
+    fun getShoppingList(id: Long? = null): Flow<List<ShoppingList>>
+    fun getProducts(ownerId: Long): Flow<ArrayList<Product>>
+    fun updateShoppingList(shoppingList: ShoppingList): Flow<Boolean>
+    fun updateProduct(product: Product): Flow<Boolean>
+    fun deleteProduct(id: Long): Flow<Boolean>
+    fun deleteShoppingList(id: Long): Flow<Boolean>
 }

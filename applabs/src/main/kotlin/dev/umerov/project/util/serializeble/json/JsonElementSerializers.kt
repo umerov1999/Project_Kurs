@@ -179,8 +179,7 @@ internal object JsonObjectSerializer : KSerializer<JsonObject> {
     private object JsonObjectDescriptor :
         SerialDescriptor by MapSerializer(String.serializer(), JsonElementSerializer).descriptor {
         @ExperimentalSerializationApi
-        override val serialName: String =
-            "dev.umerov.project.util.serializeble.json.JsonObject"
+        override val serialName: String = "dev.umerov.project.util.serializeble.json.JsonObject"
     }
 
     override val descriptor: SerialDescriptor = JsonObjectDescriptor
@@ -210,8 +209,7 @@ internal object JsonArraySerializer : KSerializer<JsonArray> {
     private object JsonArrayDescriptor :
         SerialDescriptor by ListSerializer(JsonElementSerializer).descriptor {
         @ExperimentalSerializationApi
-        override val serialName: String =
-            "dev.umerov.project.util.serializeble.json.JsonArray"
+        override val serialName: String = "dev.umerov.project.util.serializeble.json.JsonArray"
     }
 
     override val descriptor: SerialDescriptor = JsonArrayDescriptor

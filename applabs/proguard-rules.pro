@@ -9,7 +9,6 @@
 
 # BASE APP
 -keep class dev.umerov.project.** { *; }
--keep class dev.umerov.project.** { *; }
 
 
 #Native Library

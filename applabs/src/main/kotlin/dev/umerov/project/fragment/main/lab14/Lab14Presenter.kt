@@ -4,8 +4,8 @@ import androidx.annotation.IdRes
 import dev.umerov.project.Includes
 import dev.umerov.project.R
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.model.main.labs.Lab14AudioAlbum
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
 
 class Lab14Presenter : RxSupportPresenter<ILab14View>() {
     private val list = ArrayList<Lab14AudioAlbum>()
@@ -27,8 +27,8 @@ class Lab14Presenter : RxSupportPresenter<ILab14View>() {
 
     fun fireStore(playlist: Lab14AudioAlbum) {
         val oldId = playlist.db_id
-        appendDisposable(
-            Includes.stores.projectStore().updatePlaylist(playlist).fromIOToMain().subscribe({
+        appendJob(
+            Includes.stores.projectStore().updatePlaylist(playlist).fromIOToMain({
                 if (oldId < 0) {
                     list.add(0, playlist)
                     view?.notifyDataAdded(0, 1)
@@ -55,14 +55,13 @@ class Lab14Presenter : RxSupportPresenter<ILab14View>() {
         if (pos < 0 || pos > list.size - 1) {
             return
         }
-        appendDisposable(
-            Includes.stores.projectStore().deletePlaylist(list[pos].db_id).fromIOToMain()
-                .subscribe({
-                    list.removeAt(pos)
-                    view?.notifyDataRemoved(pos, 1)
-                }, {
-                    view?.showThrowable(it)
-                })
+        appendJob(
+            Includes.stores.projectStore().deletePlaylist(list[pos].db_id).fromIOToMain({
+                list.removeAt(pos)
+                view?.notifyDataRemoved(pos, 1)
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -94,14 +93,13 @@ class Lab14Presenter : RxSupportPresenter<ILab14View>() {
         if (pos < 0 || pos > list.size - 1 || list[pos].tempIsAnimation || !list[pos].tempIsEditMode) {
             return
         }
-        appendDisposable(
-            Includes.stores.projectStore().deletePlaylist(list[pos].db_id).fromIOToMain()
-                .subscribe({
-                    list.removeAt(pos)
-                    view?.notifyDataRemoved(pos, 1)
-                }, {
-                    view?.showThrowable(it)
-                })
+        appendJob(
+            Includes.stores.projectStore().deletePlaylist(list[pos].db_id).fromIOToMain({
+                list.removeAt(pos)
+                view?.notifyDataRemoved(pos, 1)
+            }, {
+                view?.showThrowable(it)
+            })
         )
     }
 
@@ -130,13 +128,12 @@ class Lab14Presenter : RxSupportPresenter<ILab14View>() {
     }
 
     private fun loadDb() {
-        appendDisposable(
-            Includes.stores.projectStore().getPlaylists(checkedItem).fromIOToMain()
-                .subscribe({
-                    list.clear()
-                    list.addAll(it)
-                    view?.notifyDataSetChanged()
-                }, { view?.showThrowable(it) })
+        appendJob(
+            Includes.stores.projectStore().getPlaylists(checkedItem).fromIOToMain({
+                list.clear()
+                list.addAll(it)
+                view?.notifyDataSetChanged()
+            }, { view?.showThrowable(it) })
         )
     }
 

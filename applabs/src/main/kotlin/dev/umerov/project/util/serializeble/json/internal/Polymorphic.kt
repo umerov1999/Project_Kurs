@@ -9,6 +9,7 @@ import dev.umerov.project.util.serializeble.json.ClassDiscriminatorMode
 import dev.umerov.project.util.serializeble.json.Json
 import dev.umerov.project.util.serializeble.json.JsonClassDiscriminator
 import dev.umerov.project.util.serializeble.json.JsonDecoder
+import dev.umerov.project.util.serializeble.json.JsonElement
 import dev.umerov.project.util.serializeble.json.JsonEncoder
 import dev.umerov.project.util.serializeble.json.JsonObject
 import dev.umerov.project.util.serializeble.json.contentOrNull
@@ -128,3 +129,9 @@ internal fun SerialDescriptor.classDiscriminator(json: Json): String {
     return json.configuration.classDiscriminator
 }
 
+internal fun throwJsonElementPolymorphicException(
+    serialName: String?,
+    element: JsonElement
+): Nothing {
+    throw JsonEncodingException("Class with serial name $serialName cannot be serialized polymorphically because it is represented as ${element::class.simpleName}. Make sure that its JsonTransformingSerializer returns JsonObject, so class discriminator can be added to it.")
+}

@@ -10,7 +10,6 @@ import com.google.android.material.imageview.ShapeableImageView
 import dev.umerov.project.R
 import dev.umerov.project.module.ProjectNative
 import dev.umerov.project.module.rlottie.RLottieDrawable
-import io.reactivex.rxjava3.disposables.Disposable
 import java.io.File
 
 class RLottieShapeableImageView @JvmOverloads constructor(
@@ -21,7 +20,6 @@ class RLottieShapeableImageView @JvmOverloads constructor(
     private var autoRepeat: Boolean
     private var attachedToWindow = false
     private var playing = false
-    private var mDisposable: Disposable? = null
     fun clearLayerColors() {
         layerColors?.clear()
     }
@@ -93,7 +91,6 @@ class RLottieShapeableImageView @JvmOverloads constructor(
     }
 
     fun clearAnimationDrawable() {
-        mDisposable?.dispose()
         animatedDrawable?.let {
             it.stop()
             it.callback = null
@@ -114,7 +111,6 @@ class RLottieShapeableImageView @JvmOverloads constructor(
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
-        mDisposable?.dispose()
         attachedToWindow = false
         animatedDrawable?.stop()
         animatedDrawable?.setCurrentParentView(null)
@@ -135,7 +131,6 @@ class RLottieShapeableImageView @JvmOverloads constructor(
     override fun setImageDrawable(dr: Drawable?) {
         super.setImageDrawable(dr)
         if (dr !is RLottieDrawable) {
-            mDisposable?.dispose()
             animatedDrawable?.let {
                 it.stop()
                 it.callback = null
@@ -147,7 +142,6 @@ class RLottieShapeableImageView @JvmOverloads constructor(
 
     override fun setImageBitmap(bm: Bitmap?) {
         super.setImageBitmap(bm)
-        mDisposable?.dispose()
         animatedDrawable?.let {
             it.stop()
             it.callback = null
@@ -158,7 +152,6 @@ class RLottieShapeableImageView @JvmOverloads constructor(
 
     override fun setImageResource(resId: Int) {
         super.setImageResource(resId)
-        mDisposable?.dispose()
         animatedDrawable?.let {
             it.stop()
             it.callback = null

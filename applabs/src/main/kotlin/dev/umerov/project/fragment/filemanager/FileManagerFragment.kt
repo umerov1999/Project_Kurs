@@ -31,7 +31,6 @@ import dev.umerov.project.activity.ActivityUtils
 import dev.umerov.project.activity.EnterPinActivity
 import dev.umerov.project.fragment.base.BaseMvpFragment
 import dev.umerov.project.fragment.filemanager.FileManagerAdapter.ClickListener
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.getParcelableCompat
 import dev.umerov.project.getParcelableExtraCompat
 import dev.umerov.project.listener.BackPressCallback
@@ -47,14 +46,13 @@ import dev.umerov.project.settings.CurrentTheme
 import dev.umerov.project.settings.Settings
 import dev.umerov.project.util.Utils
 import dev.umerov.project.util.ViewUtils
-import dev.umerov.project.util.rxutils.RxUtils
+import dev.umerov.project.util.coroutines.CancelableJob
+import dev.umerov.project.util.coroutines.CoroutinesUtils.delayTaskFlow
+import dev.umerov.project.util.coroutines.CoroutinesUtils.toMain
 import dev.umerov.project.view.MySearchView
 import dev.umerov.project.view.natives.rlottie.RLottieImageView
-import io.reactivex.rxjava3.core.Completable
-import io.reactivex.rxjava3.disposables.Disposable
 import java.io.File
 import java.util.Calendar
-import java.util.concurrent.TimeUnit
 
 class FileManagerFragment : BaseMvpFragment<FileManagerPresenter, IFileManagerView>(),
     IFileManagerView, ClickListener, BackPressCallback, CanBackPressedCallback {
@@ -66,7 +64,7 @@ class FileManagerFragment : BaseMvpFragment<FileManagerPresenter, IFileManagerVi
     private var mAdapter: FileManagerAdapter? = null
     private var mSwipeRefreshLayout: SwipeRefreshLayout? = null
 
-    private var animationDispose = Disposable.disposed()
+    private var animationDispose = CancelableJob()
     private var mAnimationLoaded = false
     private var animLoad: ObjectAnimator? = null
     private var mySearchView: MySearchView? = null
@@ -74,7 +72,7 @@ class FileManagerFragment : BaseMvpFragment<FileManagerPresenter, IFileManagerVi
 
     override fun onDestroy() {
         super.onDestroy()
-        animationDispose.dispose()
+        animationDispose.cancel()
     }
 
     override fun onResume() {
@@ -309,15 +307,13 @@ class FileManagerFragment : BaseMvpFragment<FileManagerPresenter, IFileManagerVi
     }
 
     override fun resolveLoading(visible: Boolean) {
-        animationDispose.dispose()
+        animationDispose.cancel()
         if (mAnimationLoaded && !visible) {
             mAnimationLoaded = false
             animLoad?.start()
         } else if (!mAnimationLoaded && visible) {
             animLoad?.end()
-            animationDispose = Completable.create {
-                it.onComplete()
-            }.delay(300, TimeUnit.MILLISECONDS).fromIOToMain().subscribe({
+            animationDispose.set(delayTaskFlow(300).toMain {
                 mAnimationLoaded = true
                 loading?.visibility = View.VISIBLE
                 loading?.alpha = 1f
@@ -333,7 +329,7 @@ class FileManagerFragment : BaseMvpFragment<FileManagerPresenter, IFileManagerVi
                     )
                 )
                 loading?.playAnimation()
-            }, RxUtils.ignore())
+            })
         }
     }
 

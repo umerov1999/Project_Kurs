@@ -8,6 +8,7 @@ import dev.umerov.project.util.serializeble.json.Json
 import dev.umerov.project.util.serializeble.json.JsonElement
 import dev.umerov.project.util.serializeble.json.JsonElementSerializer
 import dev.umerov.project.util.serializeble.json.JsonEncoder
+import dev.umerov.project.util.serializeble.json.JsonObject
 import dev.umerov.project.util.serializeble.json.internal.lexer.COLON
 import dev.umerov.project.util.serializeble.json.internal.lexer.COMMA
 import dev.umerov.project.util.serializeble.json.internal.lexer.INVALID
@@ -65,6 +66,9 @@ internal class StreamingJsonEncoder(
     }
 
     override fun encodeJsonElement(element: JsonElement) {
+        if (polymorphicDiscriminator != null && element !is JsonObject) {
+            throwJsonElementPolymorphicException(polymorphicSerialName, element)
+        }
         encodeSerializableValue(JsonElementSerializer, element)
     }
 

@@ -11,12 +11,12 @@ import dev.umerov.project.fragment.base.core.IMvpView
 import dev.umerov.project.settings.Settings.get
 import dev.umerov.project.util.ErrorLocalizer
 import dev.umerov.project.util.Utils
-import io.reactivex.rxjava3.disposables.CompositeDisposable
-import io.reactivex.rxjava3.disposables.Disposable
+import dev.umerov.project.util.coroutines.CompositeJob
+import kotlinx.coroutines.Job
 
 abstract class RxSupportPresenter<V : IMvpView> :
     AbsPresenter<V>() {
-    protected val compositeDisposable = CompositeDisposable()
+    protected val compositeJob = CompositeJob()
     var viewCreationCount = 0
         private set
 
@@ -26,12 +26,12 @@ abstract class RxSupportPresenter<V : IMvpView> :
     }
 
     override fun onDestroyed() {
-        compositeDisposable.dispose()
+        compositeJob.cancel()
         super.onDestroyed()
     }
 
-    fun appendDisposable(disposable: Disposable) {
-        compositeDisposable.add(disposable)
+    fun appendJob(job: Job) {
+        compositeJob.add(job)
     }
 
     protected fun showError(view: IErrorView?, throwable: Throwable?) {

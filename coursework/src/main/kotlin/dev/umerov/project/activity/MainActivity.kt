@@ -15,7 +15,6 @@ import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.ColorInt
 import androidx.annotation.IdRes
 import androidx.annotation.LayoutRes
 import androidx.annotation.RequiresApi
@@ -55,7 +54,9 @@ import dev.umerov.project.place.PlaceFactory.getPastePlace
 import dev.umerov.project.place.PlaceFactory.getPreferencesPlace
 import dev.umerov.project.place.PlaceFactory.getTakePlace
 import dev.umerov.project.place.PlaceProvider
-import dev.umerov.project.settings.CurrentTheme
+import dev.umerov.project.settings.CurrentTheme.getNavigationBarColor
+import dev.umerov.project.settings.CurrentTheme.getStatusBarColor
+import dev.umerov.project.settings.CurrentTheme.getStatusBarNonColored
 import dev.umerov.project.settings.Settings
 import dev.umerov.project.settings.theme.ThemesController.currentStyle
 import dev.umerov.project.settings.theme.ThemesController.nextRandom
@@ -65,9 +66,10 @@ import dev.umerov.project.util.AppPerms.requestPermissionsResultAbs
 import dev.umerov.project.util.HelperSimple.NOTIFICATION_PERMISSION
 import dev.umerov.project.util.HelperSimple.needHelp
 import dev.umerov.project.util.Utils
+import dev.umerov.project.util.Utils.hasVanillaIceCream
 import dev.umerov.project.util.ViewUtils.keyboardHide
+import dev.umerov.project.util.coroutines.CompositeJob
 import dev.umerov.project.util.toast.CustomToast.Companion.createCustomToast
-import io.reactivex.rxjava3.disposables.CompositeDisposable
 
 class MainActivity : AppCompatActivity(), OnSectionResumeCallback, AppStyleable, PlaceProvider,
     NavigationBarView.OnItemSelectedListener, UpdatableNavigation {
@@ -80,7 +82,7 @@ class MainActivity : AppCompatActivity(), OnSectionResumeCallback, AppStyleable,
     private var mLastBackPressedTime: Long = 0
     private val DOUBLE_BACK_PRESSED_TIMEOUT = 2000
     private val TAG = "MainActivity_LOG"
-    private val mCompositeDisposable = CompositeDisposable()
+    private val mCompositeDisposable = CompositeJob()
     private val requestReadWritePermission = requestPermissionsResultAbs(
         arrayOf(
             Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE
@@ -317,13 +319,15 @@ class MainActivity : AppCompatActivity(), OnSectionResumeCallback, AppStyleable,
 
     @Suppress("DEPRECATION")
     override fun setStatusbarColored(colored: Boolean, invertIcons: Boolean) {
-        val statusBarNonColored = CurrentTheme.getStatusBarNonColored(this)
-        val statusBarColored = CurrentTheme.getStatusBarColor(this)
         val w = window
-        w.statusBarColor = if (colored) statusBarColored else statusBarNonColored
-        @ColorInt val navigationColor =
-            if (colored) CurrentTheme.getNavigationBarColor(this) else Color.BLACK
-        w.navigationBarColor = navigationColor
+        if (!hasVanillaIceCream()) {
+            w.statusBarColor =
+                if (colored) getStatusBarColor(this) else getStatusBarNonColored(
+                    this
+                )
+            w.navigationBarColor =
+                if (colored) getNavigationBarColor(this) else Color.BLACK
+        }
         val ins = WindowInsetsControllerCompat(w, w.decorView)
         ins.isAppearanceLightStatusBars = invertIcons
         ins.isAppearanceLightNavigationBars = invertIcons
@@ -410,7 +414,7 @@ class MainActivity : AppCompatActivity(), OnSectionResumeCallback, AppStyleable,
     }
 
     override fun onDestroy() {
-        mCompositeDisposable.dispose()
+        mCompositeDisposable.cancel()
         supportFragmentManager.removeOnBackStackChangedListener(mOnBackStackChangedListener)
 
         //if (!isChangingConfigurations) {

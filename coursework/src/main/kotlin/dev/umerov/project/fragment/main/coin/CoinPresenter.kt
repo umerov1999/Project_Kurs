@@ -2,12 +2,14 @@ package dev.umerov.project.fragment.main.coin
 
 import dev.umerov.project.Includes
 import dev.umerov.project.fragment.base.RxSupportPresenter
-import dev.umerov.project.fromIOToMain
 import dev.umerov.project.model.db.CoinOperation
 import dev.umerov.project.model.db.CoinOperationType
 import dev.umerov.project.model.db.Register
 import dev.umerov.project.model.db.RegisterType
 import dev.umerov.project.util.Utils
+import dev.umerov.project.util.coroutines.CoroutinesUtils.fromIOToMain
+import dev.umerov.project.util.coroutines.CoroutinesUtils.myEmit
+import dev.umerov.project.util.coroutines.CoroutinesUtils.sharedFlowToMain
 import java.util.Calendar
 
 class CoinPresenter(@CoinOperationType private val operationType: Int) :
@@ -32,9 +34,8 @@ class CoinPresenter(@CoinOperationType private val operationType: Int) :
     private fun loadActualData() {
         actualDataLoading = true
         resolveRefreshingView()
-        appendDisposable(Includes.stores.projectStore().fetchCoinOperations(operationType)
-            .fromIOToMain()
-            .subscribe({
+        appendJob(Includes.stores.projectStore().fetchCoinOperations(operationType)
+            .fromIOToMain({
                 onActualDataReceived(
                     it
                 )
@@ -78,13 +79,12 @@ class CoinPresenter(@CoinOperationType private val operationType: Int) :
             for (i in operations) {
                 if (i.dbId == operation.dbId) {
                     found = true
-                    appendDisposable(Includes.stores.projectStore().updateOperation(operation)
-                        .fromIOToMain()
-                        .subscribe(
+                    appendJob(Includes.stores.projectStore().updateOperation(operation)
+                        .fromIOToMain(
                             {
                                 operations[pos] = operation
                                 view?.notifyItemChanged(pos)
-                                Includes.needReadRegister.onNext(true)
+                                Includes.needReadRegister.myEmit(true)
                             },
                             {
                                 view?.showThrowable(it)
@@ -96,11 +96,10 @@ class CoinPresenter(@CoinOperationType private val operationType: Int) :
                 pos++
             }
             if (!found) {
-                appendDisposable(Includes.stores.projectStore().updateOperation(operation)
-                    .fromIOToMain()
-                    .subscribe(
+                appendJob(Includes.stores.projectStore().updateOperation(operation)
+                    .fromIOToMain(
                         {
-                            Includes.needReadRegister.onNext(true)
+                            Includes.needReadRegister.myEmit(true)
                             loadActualData()
                         },
                         {
@@ -110,11 +109,10 @@ class CoinPresenter(@CoinOperationType private val operationType: Int) :
                 )
             }
         } else {
-            appendDisposable(Includes.stores.projectStore().addOperation(operation)
-                .fromIOToMain()
-                .subscribe(
+            appendJob(Includes.stores.projectStore().addOperation(operation)
+                .fromIOToMain(
                     {
-                        Includes.needReadRegister.onNext(true)
+                        Includes.needReadRegister.myEmit(true)
                         operations.add(0, operation)
                         view?.notifyDataAdded(0, 1)
                         view?.notifyItemChanged(1)
@@ -131,13 +129,12 @@ class CoinPresenter(@CoinOperationType private val operationType: Int) :
         if (operations.size <= pos || pos < 0) {
             return
         }
-        appendDisposable(Includes.stores.projectStore().removeOperation(operations[pos].dbId)
-            .fromIOToMain()
-            .subscribe(
+        appendJob(Includes.stores.projectStore().removeOperation(operations[pos].dbId)
+            .fromIOToMain(
                 {
                     operations.removeAt(pos)
                     view?.notifyDataRemoved(pos, 1)
-                    Includes.needReadRegister.onNext(true)
+                    Includes.needReadRegister.myEmit(true)
                 },
                 {
                     view?.showThrowable(it)
@@ -165,9 +162,8 @@ class CoinPresenter(@CoinOperationType private val operationType: Int) :
     }
 
     private fun fetchRegister() {
-        appendDisposable(Includes.stores.projectStore().fetchRegister(RegisterType.BALANCE)
-            .fromIOToMain()
-            .subscribe(
+        appendJob(Includes.stores.projectStore().fetchRegister(RegisterType.BALANCE)
+            .fromIOToMain(
                 {
                     register = it
                     view?.displayRegister(register)
@@ -182,7 +178,7 @@ class CoinPresenter(@CoinOperationType private val operationType: Int) :
     init {
         fetchRegister()
         loadActualData()
-        appendDisposable(Includes.needReadRegister.subscribe {
+        appendJob(Includes.needReadRegister.sharedFlowToMain {
             fetchRegister()
         })
     }
