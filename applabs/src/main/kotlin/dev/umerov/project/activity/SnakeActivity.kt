@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import androidx.lifecycle.AtomicReference
 import com.google.android.material.textview.MaterialTextView
 import dev.umerov.project.R
 import dev.umerov.project.getParcelableCompat
@@ -29,7 +28,7 @@ import dev.umerov.project.view.snake.Delegate
 import dev.umerov.project.view.snake.Direction
 import dev.umerov.project.view.snake.SnakeModel
 import dev.umerov.project.view.snake.SnakeView
-
+import java.util.concurrent.atomic.AtomicReference
 
 class SnakeActivity : AppCompatActivity(), Delegate, SensorEventListener {
     private var snakeView: SnakeView? = null
@@ -96,7 +95,7 @@ class SnakeActivity : AppCompatActivity(), Delegate, SensorEventListener {
         }
 
         if (Settings.get().main().enableAccelerometer) {
-            SM = getSystemService(Context.SENSOR_SERVICE) as SensorManager?
+            SM = getSystemService(SENSOR_SERVICE) as SensorManager?
             accelerometerSensor = SM?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         }
     }

@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable
 import android.view.Gravity
 import android.view.View
 import android.widget.CompoundButton
-import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.GravityInt
@@ -54,11 +53,9 @@ class MaterialPopupMenuBuilder internal constructor(
     /**
      * Style of the popup menu.
      *
-     * You should use [R.style.Widget_MPM_Menu_Material3] Material 3, respectively.
      *
      * Setting this to `0` will make the popup use the default style resolved based on context
      * passed to [MaterialPopupMenu.show] function. You can customize that default style by defining
-     * [R.attr.materialPopupMenuStyle] in your theme style.
      *
      * are also declared in your style.
      */
@@ -165,7 +162,7 @@ class MaterialPopupMenuBuilder internal constructor(
     @PopupMenuMarker
     class Section internal constructor(private val context: Context) {
 
-        internal class Data {
+        class Data {
             var title: CharSequence? = null
             var titleRes = 0
             var shouldBeHidden = false
@@ -271,7 +268,7 @@ class MaterialPopupMenuBuilder internal constructor(
      */
     sealed class NormalItem : AbstractItem() {
 
-        internal sealed class Data private constructor(
+        sealed class Data(
             val label: CharSequence?,
             val labelRes: Int
         ) : AbstractItem.Data() {
@@ -372,7 +369,7 @@ class MaterialPopupMenuBuilder internal constructor(
     @PopupMenuMarker
     class NavBackItem private constructor(override val data: Data) : NormalItem() {
 
-        internal class Data : NormalItem.Data {
+        class Data : NormalItem.Data {
             constructor() : super(R.string.button_back)
             constructor(label: CharSequence) : super(label)
             constructor(labelRes: Int) : super(labelRes)
@@ -391,7 +388,7 @@ class MaterialPopupMenuBuilder internal constructor(
     @PopupMenuMarker
     class Item private constructor(override val data: Data) : NormalItem() {
 
-        internal class Data : NormalItem.Data {
+        class Data : NormalItem.Data {
             constructor(label: CharSequence) : super(label)
             constructor(labelRes: Int) : super(labelRes)
 
@@ -428,7 +425,7 @@ class MaterialPopupMenuBuilder internal constructor(
      */
     sealed class ToggleItem : NormalItem() {
 
-        internal sealed class Data : NormalItem.Data {
+        sealed class Data : NormalItem.Data {
             constructor(label: CharSequence) : super(label)
             constructor(labelRes: Int) : super(labelRes)
 
@@ -467,7 +464,7 @@ class MaterialPopupMenuBuilder internal constructor(
     @PopupMenuMarker
     class SwitchItem private constructor(override val data: Data) : ToggleItem() {
 
-        internal class Data : ToggleItem.Data {
+        class Data : ToggleItem.Data {
             constructor(label: CharSequence) : super(label)
             constructor(labelRes: Int) : super(labelRes)
         }
@@ -483,7 +480,7 @@ class MaterialPopupMenuBuilder internal constructor(
     @PopupMenuMarker
     class CheckboxItem private constructor(override val data: Data) : ToggleItem() {
 
-        internal class Data : ToggleItem.Data {
+        class Data : ToggleItem.Data {
             constructor(label: CharSequence) : super(label)
             constructor(labelRes: Int) : super(labelRes)
         }
@@ -501,7 +498,7 @@ class MaterialPopupMenuBuilder internal constructor(
     @PopupMenuMarker
     class CustomItem internal constructor(view: View) : AbstractItem() {
 
-        internal class Data(val view: View) : AbstractItem.Data() {
+        class Data(val view: View) : AbstractItem.Data() {
             var disableDefaultClickHandlers = false
         }
 
@@ -520,7 +517,7 @@ class MaterialPopupMenuBuilder internal constructor(
     @PopupMenuMarker
     class RadioButtonItem private constructor(override val data: Data) : ToggleItem() {
 
-        internal class Data : ToggleItem.Data {
+        class Data : ToggleItem.Data {
             constructor(label: CharSequence) : super(label)
             constructor(labelRes: Int) : super(labelRes)
         }
@@ -535,7 +532,7 @@ class MaterialPopupMenuBuilder internal constructor(
     @PopupMenuMarker
     class RadioGroupItem internal constructor() : AbstractItem() {
 
-        internal class Data : AbstractItem.Data() {
+        class Data : AbstractItem.Data() {
             val radioButtonItems = mutableListOf<MaterialPopupMenu.PopupMenuRadioButtonItem>()
         }
 
@@ -560,7 +557,7 @@ class MaterialPopupMenuBuilder internal constructor(
     @PopupMenuMarker
     sealed class AbstractItem {
 
-        internal sealed class Data {
+        sealed class Data {
             var onSelectListener: Runnable? = null
             open var dismissOnSelect = true
             var shouldBeHidden = false

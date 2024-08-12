@@ -705,7 +705,8 @@ public:
      * @param[in] x2 The horizontal coordinate of the second point used to determine the gradient bounds.
      * @param[in] y2 The vertical coordinate of the second point used to determine the gradient bounds.
      *
-     * @note In case the first and the second points are equal, an object filled with such a gradient fill is not rendered.
+     * @note In case the first and the second points are equal, an object is filled with a single color using the last color specified in the colorStops().
+     * @see Fill::colorStops()
      */
     Result linear(float x1, float y1, float x2, float y2) noexcept;
 
@@ -771,6 +772,8 @@ public:
      * @param[in] radius The radius of the bounding circle.
      *
      * @retval Result::InvalidArguments in case the @p radius value is zero or less.
+     *
+     * @note In case the @p radius is zero, an object is filled with a single color using the last color specified in the colorStops().
      */
     Result radial(float cx, float cy, float radius) noexcept;
 
@@ -1037,7 +1040,7 @@ public:
     /**
      * @brief Sets the trim of the stroke along the defined path segment, allowing control over which part of the stroke is visible.
      *
-     * The values of the arguments @p begin, @p end, and @p offset are in the range of 0.0 to 1.0, representing the beginning of the path and the end, respectively.
+     * If the values of the arguments @p begin and @p end exceed the 0-1 range, they are wrapped around in a manner similar to angle wrapping, effectively treating the range as circular.
      *
      * @param[in] begin Specifies the start of the segment to display along the path.
      * @param[in] end Specifies the end of the segment to display along the path.
@@ -1846,6 +1849,19 @@ public:
      */
     static Result term(CanvasEngine engine = tvg::CanvasEngine::All) noexcept;
 
+    /**
+     * @brief Retrieves the version of the TVG engine.
+     *
+     * @param[out] major A major version number.
+     * @param[out] minor A minor version number.
+     * @param[out] micro A micro version number.
+     *
+     * @return The version of the engine in the format major.minor.micro, or a @p nullptr in case of an internal error.
+     *
+     * @note Experimental API
+     */
+    static const char* version(uint32_t* major, uint32_t* minor, uint32_t* micro) noexcept;
+
     _TVG_DISABLE_CTOR(Initializer);
 };
 
@@ -1944,7 +1960,7 @@ public:
      * @retval Result::InsufficientCondition In case the animation is not loaded.
      * @retval Result::NonSupport When it's not animatable.
      *
-     * @note Range from 0.0~1.0
+     * @note Animation allows a range from 0.0 to 1.0. @p end should not be higher than @p begin.
      * @note If a marker has been specified, its range will be disregarded.
      * @see LottieAnimation::segment(const char* marker)
      * @note Experimental API

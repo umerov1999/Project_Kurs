@@ -37,20 +37,22 @@ class FileManagerAdapter(private var context: Context, private var data: List<Fi
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        when (viewType) {
-            FileType.error, FileType.photo, FileType.text, FileType.audio -> return FileHolder(
+        return when (viewType) {
+            FileType.error, FileType.photo, FileType.text, FileType.audio -> FileHolder(
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_manager_file, parent, false)
             )
 
-            FileType.folder -> return FileHolder(
+            FileType.folder -> FileHolder(
                 LayoutInflater.from(parent.context)
                     .inflate(R.layout.item_manager_folder, parent, false)
             )
+
+            else -> FileHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_manager_file, parent, false)
+            )
         }
-        return FileHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.item_manager_file, parent, false)
-        )
     }
 
     override fun getItemViewType(position: Int): Int {

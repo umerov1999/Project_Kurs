@@ -6,7 +6,6 @@
 package dev.umerov.project.util.serializeble.json.internal
 
 import dev.umerov.project.util.serializeble.json.Json
-import dev.umerov.project.util.serializeble.json.JsonConfiguration
 import dev.umerov.project.util.serializeble.json.JsonNames
 import dev.umerov.project.util.serializeble.json.JsonNamingStrategy
 import dev.umerov.project.util.serializeble.json.schemaCache

@@ -2,7 +2,6 @@ package dev.umerov.project.activity
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -185,7 +184,7 @@ class MainActivity : AppCompatActivity(), OnSectionResumeCallback, AppStyleable,
     private val requestQRScan = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == RESULT_OK) {
             val scanner = result.data?.extras?.getString(Extra.URL)
             if (scanner.nonNullNoEmpty()) {
                 MaterialAlertDialogBuilder(this)

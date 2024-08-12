@@ -884,7 +884,7 @@ void I400ToARGBRow_NEON(const uint8_t* src_y,
       : "cc", "memory", YUVTORGB_REGS, "v19");
 }
 
-#if LIBYUV_USE_ST4
+#if defined(LIBYUV_USE_ST4)
 void J400ToARGBRow_NEON(const uint8_t* src_y, uint8_t* dst_argb, int width) {
   asm volatile (
       "movi        v23.8b, #255                  \n"
@@ -1169,7 +1169,7 @@ void DetileSplitUVRow_NEON(const uint8_t* src_uv,
   );
 }
 
-#if LIBYUV_USE_ST2
+#if defined(LIBYUV_USE_ST2)
 // Read 16 Y, 8 UV, and write 8 YUY2
 void DetileToYUY2_NEON(const uint8_t* src_y,
                        ptrdiff_t src_y_tile_stride,
@@ -1263,7 +1263,7 @@ void UnpackMT2T_NEON(const uint8_t* src, uint16_t* dst, size_t size) {
         "v16", "v17", "v18", "v19", "v20", "v21", "v22", "v23");
 }
 
-#if LIBYUV_USE_ST2
+#if defined(LIBYUV_USE_ST2)
 // Reads 16 U's and V's and writes out 16 pairs of UV.
 void MergeUVRow_NEON(const uint8_t* src_u,
                      const uint8_t* src_v,
@@ -1447,7 +1447,7 @@ void SplitARGBRow_NEON(const uint8_t* src_rgba,
   );
 }
 
-#if LIBYUV_USE_ST4
+#if defined(LIBYUV_USE_ST4)
 // Reads 16 planar R's, G's, B's and A's and writes out 16 packed ARGB at a time
 void MergeARGBRow_NEON(const uint8_t* src_r,
                        const uint8_t* src_g,
@@ -2550,7 +2550,7 @@ void ARGBToARGB4444Row_NEON(const uint8_t* src_argb,
       : "cc", "memory", "v0", "v1", "v16", "v17", "v18", "v19");
 }
 
-#if LIBYUV_USE_ST2
+#if defined(LIBYUV_USE_ST2)
 void ARGBToAR64Row_NEON(const uint8_t* src_argb,
                         uint16_t* dst_ar64,
                         int width) {
@@ -2711,9 +2711,14 @@ void ARGBExtractAlphaRow_NEON(const uint8_t* src_argb,
   );
 }
 
-struct RgbUVConstants {
+struct RgbUVConstantsU8 {
   uint8_t kRGBToU[4];
   uint8_t kRGBToV[4];
+};
+
+struct RgbUVConstantsI8 {
+  int8_t kRGBToU[4];
+  int8_t kRGBToV[4];
 };
 
 // 8x1 pixels.
@@ -2721,8 +2726,8 @@ void ARGBToUV444MatrixRow_NEON(const uint8_t* src_argb,
                                uint8_t* dst_u,
                                uint8_t* dst_v,
                                int width,
-                               const struct RgbUVConstants* rgbuvconstants) {
-  asm volatile (
+                               const struct RgbUVConstantsU8* rgbuvconstants) {
+  asm volatile(
       "ldr         d0, [%4]                      \n"  // load rgbuvconstants
       "dup         v24.16b, v0.b[0]              \n"  // UB  0.875 coefficient
       "dup         v25.16b, v0.b[1]              \n"  // UG -0.5781 coefficient
@@ -2758,6 +2763,42 @@ void ARGBToUV444MatrixRow_NEON(const uint8_t* src_argb,
         "v27", "v28", "v29");
 }
 
+void ARGBToUV444MatrixRow_NEON_I8MM(
+    const uint8_t* src_argb,
+    uint8_t* dst_u,
+    uint8_t* dst_v,
+    int width,
+    const struct RgbUVConstantsI8* rgbuvconstants) {
+  asm("ld2r        {v16.4s, v17.4s}, [%[rgbuvconstants]] \n"
+      "movi        v29.16b, #0x80                \n"  // 128.5
+      "1:                                        \n"
+      "ldp         q0, q1, [%[src]], #32         \n"
+      "movi        v2.4s, #0                     \n"
+      "movi        v3.4s, #0                     \n"
+      "movi        v4.4s, #0                     \n"
+      "movi        v5.4s, #0                     \n"
+      "usdot       v2.4s, v0.16b, v16.16b        \n"
+      "usdot       v3.4s, v1.16b, v16.16b        \n"
+      "usdot       v4.4s, v0.16b, v17.16b        \n"
+      "usdot       v5.4s, v1.16b, v17.16b        \n"
+      "prfm        pldl1keep, [%[src], 448]      \n"
+      "subs        %w[width], %w[width], #8      \n"  // 8 processed per loop.
+      "uzp1        v0.8h, v2.8h, v3.8h           \n"
+      "uzp1        v1.8h, v4.8h, v5.8h           \n"
+      "addhn       v0.8b, v0.8h, v29.8h          \n"  // +128 -> unsigned
+      "addhn       v1.8b, v1.8h, v29.8h          \n"  // +128 -> unsigned
+      "str         d0, [%[dst_u]], #8            \n"  // store 8 pixels U.
+      "str         d1, [%[dst_v]], #8            \n"  // store 8 pixels V.
+      "b.gt        1b                            \n"
+      : [src] "+r"(src_argb),                 // %[src]
+        [dst_u] "+r"(dst_u),                  // %[dst_u]
+        [dst_v] "+r"(dst_v),                  // %[dst_v]
+        [width] "+r"(width)                   // %[width]
+      : [rgbuvconstants] "r"(rgbuvconstants)  // %[rgbuvconstants]
+      : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v16", "v17",
+        "v29");
+}
+
 // RGB to bt601 coefficients
 // UB   0.875 coefficient = 112
 // UG -0.5781 coefficient = 74
@@ -2766,15 +2807,27 @@ void ARGBToUV444MatrixRow_NEON(const uint8_t* src_argb,
 // VG -0.7344 coefficient = 94
 // VR   0.875 coefficient = 112 (ignored)
 
-static const struct RgbUVConstants kRgb24I601UVConstants = {{112, 74, 38, 0},
-                                                            {18, 94, 112, 0}};
+static const struct RgbUVConstantsU8 kRgb24I601UVConstantsU8 = {
+    {112, 74, 38, 0},
+    {18, 94, 112, 0}};
+static const struct RgbUVConstantsI8 kRgb24I601UVConstantsI8 = {
+    {112, -74, -38, 0},
+    {-18, -94, 112, 0}};
 
 void ARGBToUV444Row_NEON(const uint8_t* src_argb,
                          uint8_t* dst_u,
                          uint8_t* dst_v,
                          int width) {
   ARGBToUV444MatrixRow_NEON(src_argb, dst_u, dst_v, width,
-                            &kRgb24I601UVConstants);
+                            &kRgb24I601UVConstantsU8);
+}
+
+void ARGBToUV444Row_NEON_I8MM(const uint8_t* src_argb,
+                              uint8_t* dst_u,
+                              uint8_t* dst_v,
+                              int width) {
+  ARGBToUV444MatrixRow_NEON_I8MM(src_argb, dst_u, dst_v, width,
+                                 &kRgb24I601UVConstantsI8);
 }
 
 #define RGBTOUV_SETUP_REG                                                  \
@@ -4942,7 +4995,7 @@ void GaussRow_F32_NEON(const float* src, float* dst, int width) {
       : "cc", "memory", "v0", "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8");
 }
 
-#if LIBYUV_USE_ST3
+#if defined(LIBYUV_USE_ST3)
 // Convert biplanar NV21 to packed YUV24
 void NV21ToYUV24Row_NEON(const uint8_t* src_y,
                          const uint8_t* src_vu,
